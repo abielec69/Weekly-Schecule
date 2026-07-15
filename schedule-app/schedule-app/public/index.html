@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #E5E7E4;
+    --panel: #FBFAF7;
+    --ink: #1C2430;
+    --ink-soft: #5B6472;
+    --line: #CBCFC9;
+    --charcoal: #1B2531;
+    --blue: #4472C4;
+    --blue-soft: #E7EDF9;
+    --green: #4E9153;
+    --green-soft: #E7F2E4;
+    --orange: #D9691F;
+    --orange-soft: #FBEBDD;
+    --purple: #7030A0;
+    --purple-soft: #F0E4F7;
+    --red: #B23A3A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;}
+  .app{max-width:1180px;margin:0 auto;padding:0 0 60px;}
+
+  /* header */
+  .topbar{background:var(--charcoal);color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:4px solid var(--orange);}
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand h1{font-family:'Oswald',sans-serif;font-size:22px;letter-spacing:1px;text-transform:uppercase;margin:0;font-weight:700;}
+  .brand .tag{font-size:12px;color:#9CA6B4;letter-spacing:1.5px;text-transform:uppercase;}
+  .weekof{display:flex;align-items:center;gap:8px;font-size:13px;color:#C7CDD6;}
+  .weekof input{background:#28323F;border:1px solid #3C4756;color:#fff;border-radius:6px;padding:5px 8px;font-family:'Inter';font-size:13px;}
+  .mode-btn{display:flex;align-items:center;gap:8px;}
+  button.pill{border:1px solid #3C4756;background:#28323F;color:#E5E9EE;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.3px;font-family:'Inter';}
+  button.pill:hover{background:#333F4E;}
+  button.pill.active{background:var(--orange);border-color:var(--orange);color:#fff;}
+  button.pill.small{padding:6px 10px;font-size:14px;}
+
+  /* tabs */
+  .tabs{display:flex;gap:4px;padding:16px 22px 0;flex-wrap:wrap;}
+  .tab{font-family:'Oswald',sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:.5px;padding:10px 16px;cursor:pointer;color:var(--ink-soft);border-bottom:3px solid transparent;font-weight:600;}
+  .tab.active{color:var(--ink);border-bottom-color:var(--orange);}
+
+  .content{padding:20px 22px;}
+
+  .board-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .card-head{padding:10px 14px;font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.5px;text-transform:uppercase;font-size:14px;color:#fff;display:flex;align-items:center;justify-content:space-between;}
+  .card-body{padding:12px 14px;}
+
+  .roster-item{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #EEEDE8;font-size:14px;}
+  .roster-item:last-child{border-bottom:none;}
+  .roster-item .lead{font-weight:600;}
+  .rm-btn{border:none;background:none;color:#B7BDC6;cursor:pointer;font-size:15px;padding:2px 6px;}
+  .rm-btn:hover{color:var(--red);}
+  .add-row{display:flex;gap:6px;margin-top:10px;}
+  .add-row input{flex:1;padding:7px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:'Inter';}
+  .add-row button{border:none;background:var(--charcoal);color:#fff;border-radius:6px;padding:7px 12px;font-size:13px;cursor:pointer;}
+
+  .job-slot{border:1px solid var(--line);border-radius:8px;margin-bottom:12px;background:#fff;}
+  .job-slot-head{padding:8px 10px;border-bottom:1px solid var(--line);}
+  .job-slot-head input{width:100%;border:none;background:transparent;font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;color:var(--ink);padding:2px 0;}
+  .job-slot-head .placeholder{color:#A9AFB8;font-style:italic;font-weight:400;font-family:'Inter';font-size:13px;}
+  .job-slot-body{padding:8px 10px;display:flex;flex-direction:column;gap:6px;}
+  .crew-line{display:flex;align-items:center;gap:6px;}
+  .crew-line input{flex:1;border:1px solid #E3E1DA;background:#FAFAF8;border-radius:6px;padding:6px 8px;font-size:13px;font-family:'Inter';}
+  .crew-line input:disabled{border:none;background:transparent;padding:6px 0;color:var(--ink);}
+  .crew-line input:disabled::placeholder{color:#B8BEC6;}
+  .job-address{font-size:12px;color:var(--ink-soft);padding-top:4px;border-top:1px dashed var(--line);margin-top:2px;display:flex;gap:5px;align-items:flex-start;}
+  .job-address .pin{flex-shrink:0;}
+  .job-notes-input{width:100%;min-height:38px;border:1px solid #E3E1DA;background:#FAFAF8;border-radius:6px;padding:6px 8px;font-size:12px;font-family:'Inter';resize:vertical;margin-top:2px;}
+  .job-notes{font-size:12px;color:var(--ink-soft);padding-top:4px;margin-top:2px;white-space:pre-wrap;}
+  .job-days select{width:100%;border:1px solid #E3E1DA;background:#FAFAF8;border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Inter';}
+  .job-days-badge{font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-soft);display:inline-block;padding:2px 8px;border-radius:999px;margin-top:2px;}
+
+  .foreman-day{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #EEEDE8;font-size:14px;}
+  .foreman-day:last-child{border-bottom:none;}
+  .foreman-day .dow{width:52px;font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.5px;color:var(--ink-soft);}
+  .foreman-day input{flex:1;border:1px solid #E3E1DA;background:#FAFAF8;border-radius:6px;padding:6px 8px;font-size:13px;font-family:'Inter';}
+  .foreman-day input:disabled{border:none;background:transparent;padding:6px 0;color:var(--ink);}
+
+  .pto-row{display:grid;grid-template-columns:1fr 130px 28px;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid #EEEDE8;font-size:13px;}
+  .pto-row input{border:1px solid #E3E1DA;background:#FAFAF8;border-radius:6px;padding:6px 8px;font-size:13px;font-family:'Inter';}
+  .pto-row input:disabled{border:none;background:transparent;padding:6px 0;}
+  textarea.notes{width:100%;min-height:180px;border:1px solid #E3E1DA;background:#FAFAF8;border-radius:8px;padding:10px;font-family:'Inter';font-size:13px;resize:vertical;}
+  textarea.notes:disabled{background:transparent;border:none;color:var(--ink);}
+
+  .empty-hint{color:#A9AFB8;font-style:italic;font-size:13px;padding:6px 0;}
+  .top-add{display:flex;justify-content:flex-end;margin-bottom:10px;}
+  .top-add button{border:1px dashed var(--ink-soft);background:transparent;color:var(--ink-soft);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Inter';}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(15,20,26,.55);display:flex;align-items:center;justify-content:center;z-index:50;}
+  .modal{background:#fff;border-radius:10px;padding:22px;width:280px;text-align:center;}
+  .modal h3{font-family:'Oswald',sans-serif;margin:0 0 12px;font-size:16px;text-transform:uppercase;}
+  .modal input{width:100%;padding:9px;border:1px solid var(--line);border-radius:6px;font-size:15px;text-align:center;letter-spacing:2px;margin-bottom:10px;}
+  .modal button.go{width:100%;padding:9px;border:none;background:var(--orange);color:#fff;border-radius:6px;font-weight:600;cursor:pointer;font-family:'Inter';}
+  .modal .err{color:var(--red);font-size:12px;min-height:16px;margin-bottom:4px;}
+  .modal .cancel{margin-top:8px;background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:12px;text-decoration:underline;}
+  .savebar{position:fixed;bottom:16px;right:22px;background:var(--charcoal);color:#fff;font-size:12px;padding:8px 14px;border-radius:999px;opacity:0;transition:opacity .3s;pointer-events:none;}
+  .savebar.show{opacity:1;}
+  .setup-note{font-size:13px;line-height:1.6;color:var(--ink-soft);margin:0 0 10px;}
+  .setup-note a{color:var(--blue);}
+  @media (max-width:640px){
+    .board-row{grid-template-columns:1fr;}
+  }
+</style>
+
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="savebar" id="savebar">Saved</div>
+
+<script>
+const MANAGER_PIN = '2468';
+const MSAL_SDK_URL = 'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js';
+const GRAPH_SCOPES = ['Files.ReadWrite', 'User.Read'];
+
+const BOARD_COLOR = {
+  "Tower":"var(--blue)", "Electricians":"var(--blue)", "Civil":"var(--blue)",
+  "TMO/Betacom":"var(--blue)", "Mod Project":"var(--blue)", "New Builds":"var(--blue)",
+  "Power Towers":"var(--blue)", "Gary":"var(--blue)"
+};
+const ICON = {"Tower":"🗼","Electricians":"⚡","Civil":"⛑️"};
+
+const JOB_DAY_OPTIONS = [
+  { label: 'Mon – Thurs', days: ['MON','TUES','WED','THUR'] },
+  { label: 'Mon – Wed',   days: ['MON','TUES','WED'] },
+  { label: 'Mon – Tues',  days: ['MON','TUES'] },
+  { label: 'Mon only',    days: ['MON'] },
+  { label: 'Tues – Thurs',days: ['TUES','WED','THUR'] },
+  { label: 'Tues – Wed',  days: ['TUES','WED'] },
+  { label: 'Tues only',   days: ['TUES'] },
+  { label: 'Wed – Thurs', days: ['WED','THUR'] },
+  { label: 'Wed only',    days: ['WED'] },
+  { label: 'Thurs only',  days: ['THUR'] }
+];
+
+function daysLabel(days){
+  const d = (days && days.length) ? days : ['MON','TUES','WED','THUR'];
+  const match = JOB_DAY_OPTIONS.find(o => o.days.length === d.length && o.days.every((x,i)=>x===d[i]));
+  return match ? match.label : d.join(', ');
+}
+
+let globalData = null;   // crews, master lists, MS Graph settings — shared across all weeks
+let weekData = null;     // jobBoards, foremen, pto, notes — specific to the selected week
+let currentWeekKey = mondayKey(new Date().toISOString().slice(0,10));
+let knownWeeks = [];
+
+let isManager = false;
+let activeTab = 'boards';
+let saveGlobalTimer = null;
+let saveWeekTimer = null;
+let pollTimer = null;
+let pinError = '';
+let showPinModal = false;
+let showWeekPicker = false;
+
+let msalInstance = null;
+let msalAccount = null;
+let lastBackupInfo = '';
+
+function mondayKey(dateStr){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(Date.UTC(y,m-1,d));
+  const dow = dt.getUTCDay(); // 0=Sun..6=Sat
+  const diff = (dow === 0) ? -6 : (1 - dow);
+  dt.setUTCDate(dt.getUTCDate() + diff);
+  return dt.toISOString().slice(0,10);
+}
+
+function shiftDateStr(dateStr, days){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(Date.UTC(y,m-1,d));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return dt.toISOString().slice(0,10);
+}
+
+async function loadGlobal(){
+  try{
+    const res = await fetch('/api/global');
+    globalData = await res.json();
+  }catch(e){
+    globalData = { masterCrew:[], masterJobs:[], jobAddresses:{}, jobsUpdated:'', crews:{Tower:[],Electricians:[],Civil:[]}, msalClientId:'', msalTenant:'common', oneDriveFolder:'WeeklySchedules' };
+  }
+}
+
+function scheduleSaveGlobal(){
+  clearTimeout(saveGlobalTimer);
+  saveGlobalTimer = setTimeout(async ()=>{
+    try{
+      await fetch('/api/global', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(globalData) });
+      flashSaved();
+    }catch(e){ console.error('global save failed', e); }
+  }, 400);
+}
+
+async function loadWeek(weekKeyInput){
+  currentWeekKey = mondayKey(weekKeyInput);
+  try{
+    const res = await fetch('/api/week/' + currentWeekKey);
+    weekData = await res.json();
+  }catch(e){
+    weekData = { weekOf: currentWeekKey, jobBoards:{}, foremen:[], pto:[], notes:'' };
+  }
+  refreshKnownWeeks();
+  render();
+}
+
+function scheduleSaveWeek(){
+  clearTimeout(saveWeekTimer);
+  saveWeekTimer = setTimeout(async ()=>{
+    try{
+      await fetch('/api/week/' + currentWeekKey, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(weekData) });
+      flashSaved();
+    }catch(e){ console.error('week save failed', e); }
+  }, 400);
+}
+
+async function refreshKnownWeeks(){
+  try{
+    const res = await fetch('/api/weeks');
+    const j = await res.json();
+    knownWeeks = j.weeks || [];
+  }catch(e){ /* ignore */ }
+}
+
+function flashSaved(){
+  const bar = document.getElementById('savebar');
+  bar.classList.add('show');
+  setTimeout(()=>bar.classList.remove('show'), 900);
+}
+
+function anyInputFocused(){
+  const a = document.activeElement;
+  return a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA');
+}
+
+async function pollRefresh(){
+  if(anyInputFocused()) return;
+  try{
+    const [gRes, wRes] = await Promise.all([
+      fetch('/api/global'),
+      fetch('/api/week/' + currentWeekKey)
+    ]);
+    const g = await gRes.json();
+    const w = await wRes.json();
+    let changed = false;
+    if(JSON.stringify(g) !== JSON.stringify(globalData)){ globalData = g; changed = true; }
+    if(JSON.stringify(w) !== JSON.stringify(weekData)){ weekData = w; changed = true; }
+    if(changed) render();
+  }catch(e){}
+}
+
+function esc(s){
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function datalistHtml(){
+  return `<datalist id="crewNames">${globalData.masterCrew.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+  <datalist id="jobNames">${globalData.masterJobs.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    ${headerHtml()}
+    ${tabsHtml()}
+    <div class="content">${tabContentHtml()}</div>
+    ${datalistHtml()}
+    ${showPinModal ? pinModalHtml() : ''}
+  `;
+  attachEvents();
+}
+
+function headerHtml(){
+  const wk = weekData.weekOf;
+  return `
+  <div class="topbar">
+    <div class="brand">
+      <h1>Weekly Schedule</h1>
+      <span class="tag">Field Operations</span>
+    </div>
+    <div class="weekof">
+      <button class="pill small" id="prevWeekBtn" title="Previous week">◀</button>
+      ${isManager ? `<input type="date" id="weekOfInput" value="${esc(wk)}">` : ``}
+      <strong style="color:#fff">${formatWeekRange(wk)}</strong>
+      <button class="pill small" id="nextWeekBtn" title="Next week">▶</button>
+      ${isManager ? `<button class="pill small" id="weekPickerBtn" title="Jump to a week">🗓</button>` : ``}
+    </div>
+    <div class="mode-btn">
+      ${isManager
+        ? `<button class="pill active" id="lockBtn">🔓 Manager Mode — Lock</button>`
+        : `<button class="pill" id="unlockBtn">🔒 Manager Mode</button>`
+      }
+    </div>
+  </div>
+  ${showWeekPicker ? weekPickerHtml() : ''}`;
+}
+
+function weekPickerHtml(){
+  const items = knownWeeks.length ? knownWeeks.map(wk => `
+    <button class="pill small" data-jump-week="${esc(wk)}" style="margin:3px">${formatWeekRange(wk)}</button>
+  `).join('') : `<span class="empty-hint">No other weeks saved yet</span>`;
+  return `<div style="background:#242E3B;padding:12px 22px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+    <span style="color:#9CA6B4;font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-right:8px;">Jump to week:</span>
+    ${items}
+  </div>`;
+}
+
+function formatDate(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${m}/${d}/${y}`;
+}
+
+function formatWeekRange(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-').map(Number);
+  const anchor = new Date(y, m-1, d);
+  const dow = anchor.getDay();
+  const diffToMonday = (dow === 0) ? -6 : (1 - dow);
+  const monday = new Date(anchor);
+  monday.setDate(anchor.getDate() + diffToMonday);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = (dt)=> `${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}/${dt.getFullYear()}`;
+  return `${fmt(monday)} – ${fmt(sunday)}`;
+}
+
+function tabsHtml(){
+  const tabs = [['boards','Job Boards'],['foremen','Daily Action'],['pto','PTO & Notes'],['crews','Crews'],['backup','Backup']];
+  return `<div class="tabs">${tabs.map(([id,label])=>
+    `<div class="tab ${activeTab===id?'active':''}" data-tab="${id}">${label}</div>`
+  ).join('')}</div>`;
+}
+
+function tabContentHtml(){
+  if(activeTab === 'crews') return crewsTabHtml();
+  if(activeTab === 'boards') return boardsTabHtml();
+  if(activeTab === 'foremen') return foremenTabHtml();
+  if(activeTab === 'pto') return ptoTabHtml();
+  if(activeTab === 'backup') return backupTabHtml();
+  return '';
+}
+
+function crewsTabHtml(){
+  return `<div class="board-row">
+    ${Object.keys(globalData.crews).map(crewName=>{
+      const members = globalData.crews[crewName];
+      return `<div class="card">
+        <div class="card-head" style="background:${BOARD_COLOR[crewName]}">${ICON[crewName]||''} ${esc(crewName)}</div>
+        <div class="card-body">
+          ${members.length ? members.map((m,i)=>`
+            <div class="roster-item">
+              <span>${esc(m)}</span>
+              ${isManager?`<button class="rm-btn" data-action="rmCrewMember" data-crew="${esc(crewName)}" data-idx="${i}">✕</button>`:''}
+            </div>`).join('') : '<div class="empty-hint">No one assigned</div>'
+          }
+          ${isManager?`
+            <div class="add-row">
+              <input list="crewNames" placeholder="Add crew member…" data-add-crew="${esc(crewName)}">
+              <button data-action="addCrewMember" data-crew="${esc(crewName)}">Add</button>
+            </div>`:''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function boardsTabHtml(){
+  return `
+    ${isManager?`
+    <div class="top-add" style="justify-content:space-between;align-items:center;">
+      <span class="empty-hint" style="padding:0">${globalData.masterJobs.length} jobs in the job list${globalData.jobsUpdated ? ' • updated ' + esc(globalData.jobsUpdated) : ''}</span>
+      <span>
+        <button id="importJobsBtn">📋 Import Job List (CSV)</button>
+        <input type="file" id="importJobsFile" accept=".csv" style="display:none">
+      </span>
+    </div>`:''}
+    <div class="board-row">
+    ${Object.keys(weekData.jobBoards).map(boardName=>{
+      const jobs = weekData.jobBoards[boardName];
+      return `<div class="card">
+        <div class="card-head" style="background:${BOARD_COLOR[boardName]}">${esc(boardName)}</div>
+        <div class="card-body">
+          ${jobs.map((job,ji)=>{
+            const hasJob = job.jobName && job.jobName.trim().length;
+            const anyCrew = job.crew.some(c=>c && c.trim().length);
+            if(!isManager && !hasJob && !anyCrew) return '';
+            return `<div class="job-slot">
+              <div class="job-slot-head">
+                ${isManager
+                  ? `<input type="text" list="jobNames" placeholder="Job name…" value="${esc(job.jobName)}" data-action="jobName" data-board="${esc(boardName)}" data-idx="${ji}">`
+                  : (hasJob ? esc(job.jobName) : `<span class="placeholder">No job assigned</span>`)
+                }
+              </div>
+              <div class="job-slot-body">
+                <div class="job-days">
+                  ${isManager
+                    ? `<select data-action="jobDays" data-board="${esc(boardName)}" data-idx="${ji}">
+                        ${JOB_DAY_OPTIONS.map(opt=>{
+                          const val = opt.days.join(',');
+                          const current = (job.days && job.days.length ? job.days : ['MON','TUES','WED','THUR']).join(',');
+                          return `<option value="${val}" ${current===val?'selected':''}>${opt.label}</option>`;
+                        }).join('')}
+                       </select>`
+                    : (hasJob ? `<span class="job-days-badge">${daysLabel(job.days)}</span>` : '')
+                  }
+                </div>
+                ${job.crew.map((c,ci)=>{
+                  if(!isManager && !(c && c.trim().length)) return '';
+                  return `<div class="crew-line">
+                    <input list="crewNames" ${isManager?'':'disabled'} placeholder="Crew member ${ci+1}" value="${esc(c)}" data-action="jobCrew" data-board="${esc(boardName)}" data-idx="${ji}" data-ci="${ci}">
+                  </div>`;
+                }).join('')}
+                ${(hasJob && globalData.jobAddresses[job.jobName]) ? `<div class="job-address"><span class="pin">📍</span><span>${esc(globalData.jobAddresses[job.jobName])}</span></div>` : ''}
+                ${isManager
+                  ? `<textarea class="job-notes-input" placeholder="Notes…" data-action="jobNotes" data-board="${esc(boardName)}" data-idx="${ji}">${esc(job.notes||'')}</textarea>`
+                  : ((job.notes && job.notes.trim().length) ? `<div class="job-notes">📝 ${esc(job.notes)}</div>` : '')
+                }
+              </div>
+            </div>`;
+          }).join('') || '<div class="empty-hint">No jobs posted this week</div>'}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function foremenTabHtml(){
+  const days = ['MON','TUES','WED','THUR'];
+  return `
+    ${isManager?`<div class="top-add"><button data-action="addForeman">+ Add foreman schedule</button></div>`:''}
+    <div class="board-row">
+    ${weekData.foremen.map((f,fi)=>`
+      <div class="card">
+        <div class="card-head" style="background:var(--green)">
+          <span>${esc(f.name)}</span>
+          ${isManager?`<button class="rm-btn" style="color:#fff" data-action="rmForeman" data-idx="${fi}">✕</button>`:''}
+        </div>
+        <div class="card-body">
+          ${isManager?`<div class="add-row" style="margin:0 0 10px"><input placeholder="Foreman / lead name" value="${esc(f.name)}" data-action="foremanName" data-idx="${fi}"></div>`:''}
+          ${days.map(d=>`
+            <div class="foreman-day">
+              <span class="dow">${d}</span>
+              <input type="text" ${isManager?'':'disabled'} placeholder="Job / assignment" value="${esc(f.schedule[d]||'')}" data-action="foremanDay" data-idx="${fi}" data-day="${d}">
+            </div>`).join('')}
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+
+function ptoTabHtml(){
+  const sorted = weekData.pto.map((p,i)=>({...p,_i:i})).sort((a,b)=>(a.startDate||'').localeCompare(b.startDate||''));
+  return `<div class="board-row">
+    <div class="card">
+      <div class="card-head" style="background:var(--purple)">PTO</div>
+      <div class="card-body">
+        ${sorted.length ? sorted.map(p=>`
+          <div class="pto-row">
+            <input list="crewNames" ${isManager?'':'disabled'} placeholder="Crew member" value="${esc(p.name)}" data-action="ptoName" data-idx="${p._i}">
+            <span style="display:flex;gap:4px;">
+              ${isManager
+                ? `<input type="date" value="${esc(p.startDate)}" data-action="ptoStartDate" data-idx="${p._i}">
+                   <input type="date" value="${esc(p.endDate)}" data-action="ptoEndDate" data-idx="${p._i}">`
+                : `<span class="pto-range">${formatPtoRange(p.startDate, p.endDate)}</span>`
+              }
+            </span>
+            ${isManager?`<button class="rm-btn" data-action="rmPto" data-idx="${p._i}">✕</button>`:'<span></span>'}
+          </div>`).join('') : '<div class="empty-hint">No PTO logged this week</div>'
+        }
+        ${isManager?`<div class="top-add" style="margin-top:10px"><button data-action="addPto">+ Add PTO entry</button></div>`:''}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head" style="background:var(--orange)">Notes</div>
+      <div class="card-body">
+        <textarea class="notes" ${isManager?'':'disabled'} placeholder="Notes for the crew…" data-action="notes">${esc(weekData.notes)}</textarea>
+      </div>
+    </div>
+  </div>`;
+}
+
+function formatPtoRange(startDate, endDate){
+  if(!startDate && !endDate) return '';
+  if(!endDate || startDate === endDate) return formatDate(startDate);
+  return `${formatDate(startDate)} – ${formatDate(endDate)}`;
+}
+
+function backupTabHtml(){
+  if(!isManager){
+    return `<div class="card"><div class="card-body"><div class="empty-hint">OneDrive backup is managed by your scheduler.</div></div></div>`;
+  }
+  return `
+  <div class="board-row">
+    <div class="card">
+      <div class="card-head" style="background:${'var(--charcoal)'}">Microsoft Sign-in Setup</div>
+      <div class="card-body">
+        <p class="setup-note">One-time setup, done once for the whole team: register a free Azure app at
+        <a href="https://portal.azure.com" target="_blank" rel="noopener">portal.azure.com</a> → Microsoft Entra ID → App registrations → New registration.
+        Set the redirect URI (Single-page application / SPA) to this site's exact URL: <code>${esc(window.location.origin + window.location.pathname)}</code>.
+        Then paste the "Application (client) ID" below. Ask your assistant for step-by-step help if needed.</p>
+        <div class="add-row"><input id="msalClientIdInput" placeholder="Azure Application (client) ID" value="${esc(globalData.msalClientId||'')}"></div>
+        <div class="add-row"><input id="oneDriveFolderInput" placeholder="OneDrive folder name (e.g. WeeklySchedules)" value="${esc(globalData.oneDriveFolder||'WeeklySchedules')}"></div>
+        <div class="top-add" style="justify-content:flex-start;margin-top:8px"><button id="saveMsalSettingsBtn">Save Settings</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head" style="background:var(--blue)">Backup This Week</div>
+      <div class="card-body">
+        ${msalAccount ? `
+          <div class="empty-hint" style="font-style:normal">Signed in as ${esc(msalAccount.username || msalAccount.name || 'your Microsoft account')}</div>
+          <div class="top-add" style="justify-content:flex-start;margin-top:10px;gap:8px">
+            <button id="backupNowBtn">☁️ Backup this week to OneDrive</button>
+            <button id="disconnectMsBtn">Sign out</button>
+          </div>
+        ` : `
+          <div class="empty-hint">Not connected yet.</div>
+          <div class="top-add" style="justify-content:flex-start;margin-top:10px">
+            <button id="connectMsBtn">Connect Microsoft Account</button>
+          </div>
+        `}
+        ${lastBackupInfo ? `<div class="empty-hint" style="margin-top:10px">${esc(lastBackupInfo)}</div>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function pinModalHtml(){
+  return `<div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <h3>Manager Mode</h3>
+      <div class="err">${esc(pinError)}</div>
+      <input type="password" inputmode="numeric" id="pinInput" placeholder="Enter PIN" maxlength="8">
+      <button class="go" id="pinGo">Unlock</button>
+      <div><button class="cancel" id="pinCancel">Cancel</button></div>
+    </div>
+  </div>`;
+}
+
+function attachEvents(){
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.onclick = ()=>{ activeTab = t.dataset.tab; render(); };
+  });
+
+  const unlockBtn = document.getElementById('unlockBtn');
+  if(unlockBtn) unlockBtn.onclick = ()=>{ showPinModal = true; pinError=''; render(); setTimeout(()=>document.getElementById('pinInput')?.focus(),50); };
+
+  const lockBtn = document.getElementById('lockBtn');
+  if(lockBtn) lockBtn.onclick = ()=>{ isManager = false; showWeekPicker = false; render(); };
+
+  const modalBg = document.getElementById('modalBg');
+  if(modalBg){
+    document.getElementById('pinCancel').onclick = ()=>{ showPinModal=false; render(); };
+    document.getElementById('pinGo').onclick = tryPin;
+    document.getElementById('pinInput').onkeydown = (e)=>{ if(e.key==='Enter') tryPin(); };
+  }
+
+  const prevWeekBtn = document.getElementById('prevWeekBtn');
+  if(prevWeekBtn) prevWeekBtn.onclick = ()=> loadWeek(shiftDateStr(currentWeekKey, -7));
+  const nextWeekBtn = document.getElementById('nextWeekBtn');
+  if(nextWeekBtn) nextWeekBtn.onclick = ()=> loadWeek(shiftDateStr(currentWeekKey, 7));
+  const weekOfInput = document.getElementById('weekOfInput');
+  if(weekOfInput) weekOfInput.onchange = (e)=> loadWeek(e.target.value);
+  const weekPickerBtn = document.getElementById('weekPickerBtn');
+  if(weekPickerBtn) weekPickerBtn.onclick = ()=>{ showWeekPicker = !showWeekPicker; render(); };
+  document.querySelectorAll('[data-jump-week]').forEach(btn=>{
+    btn.onclick = ()=>{ showWeekPicker = false; loadWeek(btn.dataset.jumpWeek); };
+  });
+
+  document.querySelectorAll('[data-action="addCrewMember"]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const crew = btn.dataset.crew;
+      const input = document.querySelector(`[data-add-crew="${cssEsc(crew)}"]`);
+      const val = input.value.trim();
+      if(!val) return;
+      globalData.crews[crew].push(val);
+      if(!globalData.masterCrew.includes(val)) globalData.masterCrew.push(val);
+      scheduleSaveGlobal(); render();
+    };
+  });
+  document.querySelectorAll('[data-action="rmCrewMember"]').forEach(btn=>{
+    btn.onclick = ()=>{
+      globalData.crews[btn.dataset.crew].splice(+btn.dataset.idx,1);
+      scheduleSaveGlobal(); render();
+    };
+  });
+
+  document.querySelectorAll('[data-action="jobName"]').forEach(inp=>{
+    inp.oninput = ()=>{ weekData.jobBoards[inp.dataset.board][+inp.dataset.idx].jobName = inp.value; scheduleSaveWeek(); };
+  });
+  document.querySelectorAll('[data-action="jobCrew"]').forEach(inp=>{
+    inp.oninput = ()=>{
+      weekData.jobBoards[inp.dataset.board][+inp.dataset.idx].crew[+inp.dataset.ci] = inp.value;
+      scheduleSaveWeek();
+    };
+    inp.onchange = ()=>{
+      const val = inp.value.trim();
+      if(val && !globalData.masterCrew.includes(val)) { globalData.masterCrew.push(val); scheduleSaveGlobal(); }
+    };
+  });
+  document.querySelectorAll('[data-action="jobNotes"]').forEach(ta=>{
+    ta.oninput = ()=>{ weekData.jobBoards[ta.dataset.board][+ta.dataset.idx].notes = ta.value; scheduleSaveWeek(); };
+  });
+  document.querySelectorAll('[data-action="jobDays"]').forEach(sel=>{
+    sel.onchange = ()=>{
+      weekData.jobBoards[sel.dataset.board][+sel.dataset.idx].days = sel.value.split(',');
+      scheduleSaveWeek();
+    };
+  });
+
+  const addForemanBtn = document.querySelector('[data-action="addForeman"]');
+  if(addForemanBtn) addForemanBtn.onclick = ()=>{
+    weekData.foremen.push({name:'New Foreman', schedule:{MON:'',TUES:'',WED:'',THUR:''}});
+    scheduleSaveWeek(); render();
+  };
+  document.querySelectorAll('[data-action="rmForeman"]').forEach(btn=>{
+    btn.onclick = ()=>{ weekData.foremen.splice(+btn.dataset.idx,1); scheduleSaveWeek(); render(); };
+  });
+  document.querySelectorAll('[data-action="foremanName"]').forEach(inp=>{
+    inp.oninput = ()=>{ weekData.foremen[+inp.dataset.idx].name = inp.value; scheduleSaveWeek(); };
+    inp.onblur = ()=>render();
+  });
+  document.querySelectorAll('[data-action="foremanDay"]').forEach(inp=>{
+    inp.oninput = ()=>{ weekData.foremen[+inp.dataset.idx].schedule[inp.dataset.day] = inp.value; scheduleSaveWeek(); };
+  });
+
+  const addPtoBtn = document.querySelector('[data-action="addPto"]');
+  if(addPtoBtn) addPtoBtn.onclick = ()=>{
+    const today = new Date().toISOString().slice(0,10);
+    weekData.pto.push({name:'', startDate: today, endDate: today});
+    scheduleSaveWeek(); render();
+  };
+  document.querySelectorAll('[data-action="rmPto"]').forEach(btn=>{
+    btn.onclick = ()=>{ weekData.pto.splice(+btn.dataset.idx,1); scheduleSaveWeek(); render(); };
+  });
+  document.querySelectorAll('[data-action="ptoName"]').forEach(inp=>{
+    inp.oninput = ()=>{ weekData.pto[+inp.dataset.idx].name = inp.value; scheduleSaveWeek(); };
+  });
+  document.querySelectorAll('[data-action="ptoStartDate"]').forEach(inp=>{
+    inp.onchange = ()=>{ weekData.pto[+inp.dataset.idx].startDate = inp.value; scheduleSaveWeek(); render(); };
+  });
+  document.querySelectorAll('[data-action="ptoEndDate"]').forEach(inp=>{
+    inp.onchange = ()=>{ weekData.pto[+inp.dataset.idx].endDate = inp.value; scheduleSaveWeek(); render(); };
+  });
+
+  const notesArea = document.querySelector('[data-action="notes"]');
+  if(notesArea) notesArea.oninput = ()=>{ weekData.notes = notesArea.value; scheduleSaveWeek(); };
+
+  const importBtn = document.getElementById('importJobsBtn');
+  const importFile = document.getElementById('importJobsFile');
+  if(importBtn && importFile){
+    importBtn.onclick = ()=> importFile.click();
+    importFile.onchange = ()=>{
+      if(importFile.files && importFile.files[0]) handleJobsCSVFile(importFile.files[0]);
+      importFile.value = '';
+    };
+  }
+
+  const saveMsalBtn = document.getElementById('saveMsalSettingsBtn');
+  if(saveMsalBtn) saveMsalBtn.onclick = ()=>{
+    globalData.msalClientId = document.getElementById('msalClientIdInput').value.trim();
+    globalData.oneDriveFolder = document.getElementById('oneDriveFolderInput').value.trim() || 'WeeklySchedules';
+    msalInstance = null; // force re-init with new client id
+    scheduleSaveGlobal();
+    alert('Settings saved.');
+  };
+  const connectMsBtn = document.getElementById('connectMsBtn');
+  if(connectMsBtn) connectMsBtn.onclick = connectMicrosoft;
+  const disconnectMsBtn = document.getElementById('disconnectMsBtn');
+  if(disconnectMsBtn) disconnectMsBtn.onclick = disconnectMicrosoft;
+  const backupNowBtn = document.getElementById('backupNowBtn');
+  if(backupNowBtn) backupNowBtn.onclick = backupWeekToOneDrive;
+}
+
+function cssEsc(s){ return s.replace(/(["\\])/g,'\\$1'); }
+
+// Minimal CSV parser: handles quoted fields with commas/quotes inside.
+function parseCSV(text){
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if(c === '"') inQuotes = true;
+      else if(c === ','){ row.push(field); field=''; }
+      else if(c === '\n' || c === '\r'){
+        if(field.length || row.length){ row.push(field); rows.push(row); row=[]; field=''; }
+        if(c === '\r' && text[i+1] === '\n') i++;
+      } else field += c;
+    }
+  }
+  if(field.length || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(f => f && f.trim().length));
+}
+
+function extractJobsFromCSV(rows){
+  if(!rows.length) return { jobs: [], addresses: {} };
+  const header = rows[0].map(h => h.trim().toLowerCase());
+  const nameIdx = header.indexOf('name');
+  const nameConvIdx = header.findIndex(h => h.includes('name convention') || h.includes('job name-number'));
+  const jobNumIdx = header.findIndex(h => h.includes('job number'));
+  const addrIdx = header.findIndex(h => h === 'address' || h.includes('address'));
+  const cityIdx = header.indexOf('city');
+  const stateIdx = header.indexOf('state');
+  const zipIdx = header.indexOf('zip');
+  const hasHeader = nameIdx !== -1 || nameConvIdx !== -1 || jobNumIdx !== -1;
+  const dataRows = hasHeader ? rows.slice(1) : rows;
+
+  const jobs = [];
+  const addresses = {};
+  const seen = new Set();
+
+  dataRows.forEach(r => {
+    let key;
+    if(nameConvIdx !== -1){
+      key = (r[nameConvIdx]||'').trim();
+    } else if(nameIdx !== -1 && jobNumIdx !== -1){
+      const n = (r[nameIdx]||'').trim();
+      const num = (r[jobNumIdx]||'').trim();
+      key = num ? `${n}-${num}` : n;
+    } else {
+      key = (r[0]||'').trim();
+    }
+    if(!key || seen.has(key)) return;
+    seen.add(key);
+    jobs.push(key);
+
+    if(addrIdx !== -1 || cityIdx !== -1 || stateIdx !== -1 || zipIdx !== -1){
+      const parts = [];
+      const street = addrIdx !== -1 ? (r[addrIdx]||'').trim() : '';
+      if(street && street.toLowerCase() !== 'n/a') parts.push(street);
+      const cszBits = [];
+      const city = cityIdx !== -1 ? (r[cityIdx]||'').trim() : '';
+      const state = stateIdx !== -1 ? (r[stateIdx]||'').trim() : '';
+      const zip = zipIdx !== -1 ? (r[zipIdx]||'').trim() : '';
+      if(city) cszBits.push(city);
+      if(state) cszBits.push(state);
+      let csz = cszBits.join(' ');
+      if(zip && zip !== '0') csz = (csz + ' ' + zip).trim();
+      if(csz) parts.push(csz);
+      const full = parts.join(', ');
+      if(full) addresses[key] = full;
+    }
+  });
+
+  return { jobs, addresses };
+}
+
+function handleJobsCSVFile(file){
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      const rows = parseCSV(String(e.target.result));
+      const { jobs, addresses } = extractJobsFromCSV(rows);
+      if(!jobs.length){
+        alert('No job rows found in that CSV. Expected a "Name" column (and optionally "Job Number"), or a single job-name column.');
+        return;
+      }
+      globalData.masterJobs = jobs;
+      globalData.jobAddresses = addresses;
+      globalData.jobsUpdated = new Date().toLocaleDateString();
+      scheduleSaveGlobal();
+      render();
+    }catch(err){
+      console.error(err);
+      alert('Could not read that CSV file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function tryPin(){
+  const val = document.getElementById('pinInput').value;
+  if(val === MANAGER_PIN){
+    isManager = true;
+    showPinModal = false;
+    pinError = '';
+    render();
+  } else {
+    pinError = 'Incorrect PIN';
+    render();
+    setTimeout(()=>document.getElementById('pinInput')?.focus(),50);
+  }
+}
+
+// --- Microsoft OneDrive backup (MSAL.js + Microsoft Graph) ---
+
+function loadMsalScript(){
+  return new Promise((resolve, reject)=>{
+    if(window.msal){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = MSAL_SDK_URL;
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error('Could not load the Microsoft sign-in library. Check your internet connection.'));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureMsal(){
+  await loadMsalScript();
+  if(!globalData.msalClientId){
+    throw new Error('No Azure Application (client) ID set yet. Enter one under Backup → Microsoft Sign-in Setup.');
+  }
+  if(!msalInstance){
+    msalInstance = new window.msal.PublicClientApplication({
+      auth: {
+        clientId: globalData.msalClientId,
+        authority: `https://login.microsoftonline.com/${globalData.msalTenant || 'common'}`,
+        redirectUri: window.location.origin + window.location.pathname
+      },
+      cache: { cacheLocation: 'localStorage' }
+    });
+    if(typeof msalInstance.initialize === 'function'){
+      await msalInstance.initialize();
+    }
+    const accounts = msalInstance.getAllAccounts();
+    if(accounts.length) msalAccount = accounts[0];
+  }
+}
+
+async function connectMicrosoft(){
+  try{
+    await ensureMsal();
+    const result = await msalInstance.loginPopup({ scopes: GRAPH_SCOPES });
+    msalAccount = result.account;
+    render();
+  }catch(err){
+    console.error(err);
+    alert('Microsoft sign-in failed: ' + (err.message || err));
+  }
+}
+
+function disconnectMicrosoft(){
+  msalAccount = null;
+  lastBackupInfo = '';
+  render();
+}
+
+async function getGraphToken(){
+  await ensureMsal();
+  if(!msalAccount) throw new Error('Not signed in to Microsoft yet.');
+  try{
+    const result = await msalInstance.acquireTokenSilent({ scopes: GRAPH_SCOPES, account: msalAccount });
+    return result.accessToken;
+  }catch(e){
+    const result = await msalInstance.acquireTokenPopup({ scopes: GRAPH_SCOPES, account: msalAccount });
+    return result.accessToken;
+  }
+}
+
+async function backupWeekToOneDrive(){
+  try{
+    const token = await getGraphToken();
+    const folder = (globalData.oneDriveFolder || 'WeeklySchedules').replace(/^\/+|\/+$/g,'');
+    const filename = `Week-of-${weekData.weekOf}.json`;
+    const payload = JSON.stringify({ ...weekData, crews: globalData.crews }, null, 2);
+    const url = `https://graph.microsoft.com/v1.0/me/drive/root:/${encodeURIComponent(folder)}/${encodeURIComponent(filename)}:/content`;
+    const resp = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: payload
+    });
+    if(!resp.ok){
+      const errText = await resp.text();
+      throw new Error(`Graph API error ${resp.status}: ${errText}`);
+    }
+    lastBackupInfo = `Saved ${filename} to OneDrive/${folder} at ${new Date().toLocaleTimeString()}`;
+    render();
+  }catch(err){
+    console.error(err);
+    alert('Backup failed: ' + (err.message || err));
+  }
+}
+
+async function init(){
+  await loadGlobal();
+  await loadWeek(currentWeekKey);
+}
+init();
+pollTimer = setInterval(pollRefresh, 6000);
+</script>
+</body>
+</html>
