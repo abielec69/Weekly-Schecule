@@ -85,9 +85,11 @@
   .foreman-day input{flex:1;border:1px solid #E3E1DA;background:#FAFAF8;border-radius:6px;padding:6px 8px;font-size:13px;font-family:'Inter';}
   .foreman-day input:disabled{border:none;background:transparent;padding:6px 0;color:var(--ink);}
 
-  .pto-row{display:grid;grid-template-columns:1fr 130px 28px;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid #EEEDE8;font-size:13px;}
+  .pto-row{display:grid;grid-template-columns:110px 1fr 28px;gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid #EEEDE8;font-size:13px;}
   .pto-row input{border:1px solid #E3E1DA;background:#FAFAF8;border-radius:6px;padding:6px 8px;font-size:13px;font-family:'Inter';}
   .pto-row input:disabled{border:none;background:transparent;padding:6px 0;}
+  .pto-dates{display:flex;gap:4px;}
+  .pto-dates input{flex:1;min-width:0;}
   textarea.notes{width:100%;min-height:180px;border:1px solid #E3E1DA;background:#FAFAF8;border-radius:8px;padding:10px;font-family:'Inter';font-size:13px;resize:vertical;}
   textarea.notes:disabled{background:transparent;border:none;color:var(--ink);}
 
@@ -465,7 +467,7 @@ function ptoTabHtml(){
         ${sorted.length ? sorted.map(p=>`
           <div class="pto-row">
             <input list="crewNames" ${isManager?'':'disabled'} placeholder="Crew member" value="${esc(p.name)}" data-action="ptoName" data-idx="${p._i}">
-            <span style="display:flex;gap:4px;">
+            <span class="pto-dates">
               ${isManager
                 ? `<input type="date" value="${esc(p.startDate)}" data-action="ptoStartDate" data-idx="${p._i}">
                    <input type="date" value="${esc(p.endDate)}" data-action="ptoEndDate" data-idx="${p._i}">`
