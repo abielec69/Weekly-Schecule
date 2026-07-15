@@ -40,6 +40,7 @@
   button.pill{border:1px solid #3C4756;background:#28323F;color:#E5E9EE;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.3px;font-family:'Inter';}
   button.pill:hover{background:#333F4E;}
   button.pill.active{background:var(--orange);border-color:var(--orange);color:#fff;}
+  button.pill.small{padding:6px 10px;font-size:14px;}
 
   /* tabs */
   .tabs{display:flex;gap:4px;padding:16px 22px 0;flex-wrap:wrap;}
@@ -73,6 +74,10 @@
   .crew-line input:disabled::placeholder{color:#B8BEC6;}
   .job-address{font-size:12px;color:var(--ink-soft);padding-top:4px;border-top:1px dashed var(--line);margin-top:2px;display:flex;gap:5px;align-items:flex-start;}
   .job-address .pin{flex-shrink:0;}
+  .job-notes-input{width:100%;min-height:38px;border:1px solid #E3E1DA;background:#FAFAF8;border-radius:6px;padding:6px 8px;font-size:12px;font-family:'Inter';resize:vertical;margin-top:2px;}
+  .job-notes{font-size:12px;color:var(--ink-soft);padding-top:4px;margin-top:2px;white-space:pre-wrap;}
+  .job-days select{width:100%;border:1px solid #E3E1DA;background:#FAFAF8;border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Inter';}
+  .job-days-badge{font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-soft);display:inline-block;padding:2px 8px;border-radius:999px;margin-top:2px;}
 
   .foreman-day{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #EEEDE8;font-size:14px;}
   .foreman-day:last-child{border-bottom:none;}
@@ -99,6 +104,8 @@
   .modal .cancel{margin-top:8px;background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:12px;text-decoration:underline;}
   .savebar{position:fixed;bottom:16px;right:22px;background:var(--charcoal);color:#fff;font-size:12px;padding:8px 14px;border-radius:999px;opacity:0;transition:opacity .3s;pointer-events:none;}
   .savebar.show{opacity:1;}
+  .setup-note{font-size:13px;line-height:1.6;color:var(--ink-soft);margin:0 0 10px;}
+  .setup-note a{color:var(--blue);}
   @media (max-width:640px){
     .board-row{grid-template-columns:1fr;}
   }
@@ -111,81 +118,116 @@
 
 <script>
 const MANAGER_PIN = '2468';
-
-const DEFAULT_MASTER = ["Aaran Tripp","Adam B","Adam K","Aiden H","Andy C","Bill S","Billy B","Colin K","Craig D","Danny D","Derek C","Douglas","Ed","Ed S","Gary M","Groundhog","Isaac","Jack J","Jeff Sayer","Jeff Shriver","Jim D","Joel","Jordan R","Kev Dog","Kookie","Kukets","Luke","Mac N Cheese","Matt H","Mike B","Mike P","Monte M","Nate S","Nick G","Nugget","Paul D","Paul K","Philbert","Ricky K","Riley S","Ronalt","Scotty V","Thone S","Will M"];
-const DEFAULT_JOBS = ["10141449 Stockbridge Route 100-PW25085- 4", "19 PA Decoms-PW25031- 2", "1st Cabinet Swap-PW25068- 1", "2026 INSURANCE/TAX/FRINGE/COST-PW26917-", "4 Cabinet Swaps-PW25068- 2", "5th Avenue C-Band Upgrade-PW26003- 9", "A4J0010A Sector Add-PW26017- 1", "A4J0217A 5th Ave-PW26032- 3", "A4J1124A Anchor Upgrade-PW25061-", "Allegheny Center-PW24064-25", "Allegheny Tunnel Upgrade-PW25028-47", "ALLEGHENY TUNNELS-RVT-633854", "Allison North-PW25026- 3", "ALLISON NORTH-PW25026- 3", "Ambridge Area HS SC 1-PW24064-35", "Ambridge Area MS SC 1-PW24064-36", "Ambridge Borough SC 1-PW24064-30", "Aurora Sprint Decom-PW24019- 2", "Aurora Sprint Decom-PW24019- 2", "Aurora Sprint Decom-PW24019- 2", "Aurora Sprint Decom-PW24019- 2", "Aurora Sprint Decom-PW24019- 2", "Aurora Sprint Decom-PW24019- 2", "Aurora T-Mobile Troubleshoot Projects Placeholder-PW24019- X", "Aurora T-Mobile Troubleshoot Projects Placeholder-PW24019- X", "B&V P430 Power Tower-PW24047-", "Baden SC 1-PW24064-29", "Balli Farms-PW25026-27", "BANKSVILLE-RVT-633899", "Banksville Generator-PW25113- 8", "Bates St-PW25027- 5", "Bay Harbor SC 1-PW25027- 6", "BAY HARBOR SC 1 - A-RVT-633837", "Bellefield-PW25028-52", "Bellwood-PW24071- 9", "Bettis Atomic SC 1-PW24064-37", "BICKMORE NORTH-RVT-633857", "Big Bear Lake-PW26001-11", "Bigelow Blvd 5-PW24064-53", "Bigelow Blvd SC 3-PW25027- 9", "Bloomfield 18-PW24064-55", "Bloomfield 19-PW24064-48", "Bloomfield 21-PW24064-51", "Bloomfield 28-PW24064-45", "Bloomfield 34-PW24064-56", "Bloomfield 6-PW24064-42", "Bloomfield 7-PW24064-43", "Bloomfield SC 2-PW24096-12", "Bluebell-PW25029- 3", "Boswell East-PW25026- 1", "BOSWELL NORTH-RVT-633874", "Bradys Run-PW25113- 2", "Bradys Run Park SC 1-PW24096- 1", "BRADYS RUN PARK SC 1-PW24096- 1", "Bradys Run Park SC 2-PW24096- 2", "BRADYS RUN PARK SC 2-PW24096- 2", "Bradys Run Park SC 4-PW24096- 3", "BRADYS RUN PARK SC 4-PW24096- 3", "Breezewood-PW25028-26", "Brickmore North-PW25026-20", "Brier Hill-PW25028-12", "Brighton SC 1-PW24096- 4", "BRIGHTON SC 1-PW24096- 4", "Brookville-PW24071-19", "Brownsville Area HS SC 1-PW25027-26", "BROWNSVILLE AREA HS SC 1 - A-RVT-633819", "Brucetown Mills-PW25028-60", "Brush Mountain-PW25028- 9", "Buckeystown-PW25028-35", "Buckhannon East-PW26001- 5", "Butler HS SC 1-PW25027-12", "Butler HS SC 2-PW25027-13", "Calvary Cemetery-PW25029- 5", "Carmichaels-PW25026-25", "CARMICHAELS - A-RVT-633885", "CARPENDALE WV-RVT-633886", "Chartiers SE-PW26001-10", "Chestnut Grove-PW25026-30", "Chicora-PW25113-11", "CL10088B-PW26032- 1", "CL23004A Power Tower Upgrade-PW26032- 4", "Clark Bar C Band Upgrade-PW25028-53", "Claysburg-PW25028-32", "Claysburg-PW25028-32", "Clearfield-PW25028-22", "Clearfield Airport-PW25028- 5", "Clover Run-PW25028- 4", "Clyde-PW25026-24", "Conway DT SC 1-PW24064-33", "Conway South SC 1-PW24064-28", "Cooks Forest-PW25028- 8", "Craigsville-PW25026-12", "CRAIGSVILLE-PW25026-12", "Cranberry SC-PW25113- 4", "Cranberry Twp SC 3-PW26002-11", "Cranberry Twp SC 4-PW26002-12", "Cranberry Twp SC 5-PW26002-13", "Cresson-PW25028-46", "Crown Aliquippa-PW24014-13", "Crown Bluebelle-PW24014- 3", "Crown Calvery Cemetery-PW24014- 2", "Crown Castle Communications 2024 Small Projects-PW24014- X", "Crown Castle Communications 2025 Projects-PW25029- X", "Crown Castle Communications 2026 Projects-PW26004- X", "Crown Fix-PW24071-14", "Crown Fix 2-PW24071-18", "Crown Fox Chapel-PW24014-14", "Crown Greensburg-PW24014-15", "Crown Lighting-PW24014- 6", "Crown Middle Road Fence-PW24014-20", "Crown Monroeville-PW24014-10", "Crown Moose Property-PW24014-17", "Crown New Castle-PW24014-18", "Crown New Kensington-PW24014-16", "Crown North Park-PW24014- 9", "Crown North Park-PW24014- 9", "Crown PA Airport Moon 2-PW24014- 5", "Crown PIT 96UV-PW24014- 4", "Crown Repairs-PW25027-40", "Crown Sewickley-PW24014-19", "Crown Upper St Clair-PW24014- 8", "Crown West Deer-PW24014-11", "Crown West End-PW24014-12", "Crown Xenon-PW24014- 1", "CUP SC 6-PW25027- 2", "CUP SC 6-PW25027- 2", "DAISYTOWN EAST-RVT-633869", "Davis WV-PW26001-13", "DEA Echo 7-PW24067-", "Delmont SC 1-PW25027-21", "Dunbar South-PW25026- 5", "DUNBAR SOUTH  - A-RVT-633878", "E335 Power Study-PW26011- 3", "EAST COLLEGE AVE-RVT-633851", "East College Avenue Upgrade-PW26003-10", "East End-PW25028- 1", "East Greensburg SC 2-PW25113- 5", "East Liberty 1-PW24064-40", "East Ohio Street C-Band Upgrade-PW25028-59", "Economy Fire SC 1-PW24064-27", "Economy Upgrade-PW24096- 6", "Edgebrook Relo-PW25026-19", "Elizabeth Fwd SC 1-PW24064-11", "ELLWOOD CITY NORTH-RVT-633900", "Ellwood City North Generator Add-PW26002-15", "Envelope Fix-PW25027-49", "Excelsior North-PW26001- 9", "EXCELSIOR NORTH-PW26001- 9", "Fairchance-PW24006-62", "Fallen Timber-PW24071- 2", "Fan Replacement #1-PW24071- 1", "Farmington-PW25028-11", "Fence Repair-PW25029- 4", "Fola-PW25026-26", "FOUR SEASONS CAMP-RVT-633887", "Francioni Hill 11-PW25027-43", "Friendsville-PW25028-40", "Gauley Bridge Co-Locate-PW25026-18", "Generator Fueling-PW25029- 8", "Geneva College SC 1-PW25113- 1", "Glen East-PW26001- 6", "GLEN EASTON-RVT-633863", "Glen Easton Colo-PW25026-11", "Glen Savage-PW25028-10", "Goldtown-PW25028-43", "Gray 2 - 816616-PW25029-12", "Greater Latrobe HS SC 1-PW25027-22", "Greater Latrobe HS SC 2-PW25027-23", "Greenfield 3-PW24064-50", "Greenfield 5-PW24064-41", "Greensburg MS SC 1-PW25027-27", "GREENSBURG MS SC 1 - H-RVT-633822", "Harrisville East-PW25026- 9", "HARRISVILLE EAST-PW25026- 9", "Hempfield Park Colo-PW26001- 4", "Heritage Power Placeholder-PW25091- X", "HIBBS - B-RVT-633879", "Hibbs Colo-PW25026-13", "Highland ES SC 1-PW24064-31", "Highland Park 17-PW24064-58", "Highland Park 26-PW25027-44", "Highland Park 3-PW24064-47", "HILEMAN HEIGHTS-RVT-633849", "Hileman Heights Upgrade-PW25028-31", "Hill District-PW25027-15", "HILLER-RVT-633844", "Holerby Hall-PW25027-47", "Holiday Park SC 1-PW24064-18", "Holiday Park SC 2-PW24064-16", "Homeville SC 1-PW24064-15", "Hookstown-PW25027- 8", "Hopkinton Mechanic Street-PW25085- 8", "HUNKER-RVT-633883", "Huntingdon SW-PW25106-", "HUNTINGDON SW-PW25106-", "Huntingdon SW Colo-PW25026-29", "INDIAN LAKE - B-RVT-633892", "Indian Lake Generator-PW25113-12", "INDIANA SOUTH-RVT-633894", "Indiana Theater Upgrade-PW24006-48", "Irwin SC 4-PW25027-29", "IRWIN SC 4 - A-RVT-633823", "IUP C-Band Upgrade-PW25028-57", "Jackson Mills-PW25028-54", "Jackson SC 4-PW25027-19", "January Trouble Tickets-PW26004- 1", "Jeannette East-PW25026- 8", "JEANNETTE EAST - E-RVT-633862", "Jeannette East Generator Project-PW26002-14", "Kaese Mill-PW25028-44", "KANAWHA CITY-RVT-633853", "Kenebunk ME Port Road-PW25085-10", "Kidders Corner North-PW25026- 6", "KIDDERS CORNER NORTH-PW25026- 6", "Kinettix Fiber-PW25032- 1", "Kinettix Misc Small Projects-PW25032- X", "Kinzua Dam-PW25028-37", "Kittanning NE-PW25026- 4", "KITTANNING NE - A-RVT-633877", "LABORATORY WEST - G-RVT-633815", "Latrobe SC 8-PW25027-37", "Lawrenceville 8-PW24064-39", "Leeper-PW24006-61", "Lernersville Speedway-PW26001- 3", "Lewistown Narrows-PW25028-24", "Libert Center SC 1-PW25027- 7", "LIBERTY CENTER SC 1 - C-RVT-633836", "Lickingville-PW26001- 2", "Lickingville PA-PW25120-", "Lightning Rod-PW25029- 9", "LINCOLN NORTH-RVT-633884", "Longview-PW25028-29", "LONGVIEW-PW25028-29", "Lycippus-PW24064-22", "Maine Ericsson Placeholder-PW25085- X", "Maine Ericsson Placeholder 2026-PW26006- X", "Manchester Generator Removal Cam Lock Install-PW25113- 9", "Manchester RT Upgrade-PW24071-20", "March Trouble Tickets-PW26004- 2", "Market Square C-Band Upgrade-PW25028-55", "Marshall Twp SC 1-PW25027-24", "Mas Repair-PW24014- 7", "MCLAUGHLIN RUN-RVT-633852", "McPherron-PW25028-23", "ME1907 Sidney 1-PW25085- 7", "Meadville Dt-PW24071- 4", "MEADVILLE DT - A-RVT-633902", "MEL01252 NWN Van Buren-PW25085- 5", "Meyers Run-PW25028-27", "MEYERS RUN - A-RVT-633846", "MON VALLEY HOSPITAL - C-RVT-633876", "Monroeville SC 2-PW24096-11", "MONROEVILLE SC 2 - B-RVT-633841", "MORGANTOWN SC 2 - A-RVT-633818", "MORGANTOWN SC 3 - A-RVT-633826", "Morgantown SC 4-PW25113- 3", "MORGANTOWN SC 4 - A-RVT-633817", "Morgantown US Cell Switch-PW25062-", "Mount Royal-PW25029- 6", "Mountain View-PW25027-14", "Mt Morris-PW25028-33", "Mt Oliver 7-PW25027-46", "Mt Vernon SC 1-PW24064-17", "MT. MORRIS HD-RVT-633850", "Mulga-PW25028- 6", "Myersville-PW25028-48", "N PGH Telco-PW25028-50", "Nettie-PW25026-23", "NETTIE-PW25026-23", "Nettie West-PW25026-14", "NETTIE WEST-PW25026-14", "Newlonsburg SC 1-PW25027-33", "NEWLONSBURG SC 1 - B-RVT-633830", "Newlonsburg SC 2-PW25027-32", "NEWLONSBURG SC 2 - A-RVT-633824", "Newlonsburg SC 3-PW25027-28", "NEWLONSBURG SC 3 - B-RVT-633829", "Newlonsburg SC 4-PW25027-34", "Newton-PW25027-16", "NFL Draft-PW25027-41", "NFL Draft East Temp Site-PW26003- 1", "NFL Draft Stage Fiber DES-PW26002- 1", "North Shore-PW26003- 6", "North Side Generator-PW25029-10", "North Springfield-PW25026- 7", "NORTH SPRINGFIELD-PW25026- 7", "North Strabane-PW24064-23", "NWN Belfast-PW25085-15", "NWN Fort Fairfield-PW25085-12", "NWN Northpot West-PW25085-13", "NWN Sears Island-PW25085-14", "NWN St David-PW25085-11", "Oakland-PW26003- 4", "Oakland 11-PW24064-54", "OAKLAND HD-RVT-633842", "Oblock SC 1-PW24064- 8", "Ohiopyle-PW25028- 2", "Olgebay Altl-PW24064-26", "Overhead-PW25085- 1", "P697 Co Locate AT&T-PW26011- 1", "P737 Co Locate AT&T-PW26011- 2", "P745 Power Studies-PW26011- 4", "PA Ericsson Placeholder-PW25094- X", "PA Ericsson Placeholder 2026-PW26005- X", "Park Hills-PW25028-18", "Parkway Center C-Band Upgrade-PW25028-58", "Peach St Square SC 1-PW25027-30", "Peach St Square SC 2-PW25027-31", "PEACH STREET SQUARE SC 1 - A-RVT-633833", "PEACH STREET SQUARE SC 2 - A-RVT-633832", "Penn State Main 12-PW24096- 8", "Penn State Main 16-PW24096- 7", "Penn State Main 27-PW25027-17", "Penn State Main SC 6-PW24096-10", "Penn State SC 64-PW24096-13", "Penn Tower Upgrade-PW24006-49", "Pennsville Gen-PW24071- 6", "PERRYSVILLE AVE - B-RVT-633897", "Peters-PW24064-24", "Peters Twp SC 1-PW25027-48", "PIT V96T-PW25029- 7", "PIT_HIGHLAND_PARK_0026_W2 - A-RVT-633831", "Pitt Triangle SC 7-PW24096- 5", "PITT TRIANGLE SC 7-PW24096- 5", "Pittsburgh Zoo Wifi Install-PW25095-", "PIVIK ES SC 1-PW24064-34", "Pointbreeze 17-PW24064-52", "Porter Falls-PW26001- 8", "PORTERS FALLS-RVT-633882", "Power Plant Replacements-PW26060-", "Prattsville-PW25028-17", "Propel School SC 1-PW24064-12", "Propel Schools SC 1-PW24064-14", "Prospect Dt-PW26003- 8", "Prospect DT-PW26003- 8", "Prospect ME Heagan Mnt Rd-PW25085- 9", "PSU Football SC 25-PW24096- 9", "PSU Pollock Halls Upgrade-PW25028-15", "PSU Walker Building Upgrade-PW24006-58", "PSU Wartik Labs Upgrade-PW25028-14", "PWL00409 Ohioville-PW25094- 2", "PWL02083-PW25094- 1", "Pymatuming North-PW26001- 1", "Radio Swaps-PW25027-36", "Regent Square 7-PW24064-57", "RESTLAND MEMORIAL PARK-RVT-633893", "Return Troubleshoots-PW25028-42", "Roanoke-PW25028-51", "Rockingham VT VT6301-PW26008- 1", "Rogersville-PW25028-13", "RPR-PW25029- 2", "S LATROBE SC 8 - F-RVT-633827", "SARDIS RD-RVT-633861", "SBA T-MOBILE UPGRADES 2024-PW24005- X", "Schweibinzville-PW25028-16", "Scott Twp Asphalt Repair-PW25027-52", "September Radio Swaps-PW25027-50", "Seven Points-PW25026-17", "Seven Points-PW25026-17", "SEVEN POINTS RD-RVT-633860", "Shadyside 24-PW24064-49", "Shadyside SC 5-PW25027- 1", "Shawville Lighting Repair-PW25091- 2", "Shawville Lighting Repair-PW25091- 2", "Shirleysburg-PW25027-18", "Shookstown-PW25028-36", "Shroud Replacements-PW24064-21", "Shrouds-PW25027-39", "Sidman South-PW26001- 7", "Site #99-PW26003- 3", "Small Cell Troubleshoot-PW24071- 5", "Small Cell Troubleshoot-PW24071- 5", "Small Cell Troubleshoots-PW26002- 3", "Small Cell TS-PW25027-20", "Small Random Projects-PW26002- 4", "Smethport HS SC 1-PW25027-25", "SMETHPORT HS SC 1 - P-RVT-633820", "South Allegheny EDU SC 1-PW24064- 6", "South Allegheny SC 1-PW24064-13", "South Allen Street Upgrade-PW24006-50", "SOUTH CLARION-RVT-633866", "South Greenock SC 1-PW24064- 7", "SOUTH PARK TWP-RVT-633873", "SOUTH PARK TWP-RVT-633873", "Southside Area HS SC 1-PW24064-32", "SPRING HILL - C-RVT-633890", "Spring Hill Generator-PW26002-10", "Squirrel Hill 32-PW25027-42", "Squirrel Hill 66-PW24064-46", "Squirrel Hill 66-PW24064-46", "Squirrel Hill 67-PW25027-35", "STANWIX HD C-BAND ADD-PW25028-61", "STARPOINTE-RVT-633871", "Starpointe Colocate-PW25026- 2", "Station Square Upgrade-PW25028-38", "Steel Valley SC 1-PW24064- 9", "Stoops Ferry-PW24071-11", "Stoops Ferry-PW24071-11", "Storm Generators-PW25029-11", "STRABANE WEST-RVT-633872", "Strabane West Colo-PW25026-10", "Strawn-PW25028-21", "Sulphur City-PW25026-16", "SULPHUR CITY-PW25026-16", "Summit Village-PW25028-25", "SUTERSVILLE - C-RVT-633896", "SY91437A-PW26044- 1", "SY91437A-PW26044- 1", "SY91437A PO2885-PW26046-", "T-Mobile A4J0354B-PW24002- 7", "T-Mobile Allegheny Tunnel testing-PW26032- 2", "T-Mobile CL12407F-PW24002- 6", "T-Mobile CL31320A Power Tower-PW24002- 4", "T-Mobile Matrix Projects 2024 Place Holder-PW24002- X", "T-Mobile Matrix Projects 2025 Place Holder-PW25030- X", "T-Mobile Projects 2026 Place Holder-PW26017- X", "Tag Towers Placeholder-PW25099- X", "Taylor Allderdice HS SC 1-PW24064-44", "Ten Mile-PW25028-28", "Terminal Building Matrix Upgrade-PW24006-51", "The Summit-PW25028- 3", "THE SUMMIT VILLAGE A-RVT-633848", "Troubleshoot 2-PW24071-10", "Troubleshoot 3-PW24071-17", "Tuscarora Tunnel Upgrade-PW26003- 2", "Tyrone SC 1-PW25027-38", "TYRONE SC 1 - B-RVT-633816", "UNIONTOWN AREA HS SC 1 - D-RVT-633828", "Uniontown Bank-PW26003- 5", "Uniontown Bank Generator Room TS-PW26002- 5", "Uniontown HS SC 1-PW25113- 7", "Unity Reservoir-PW25027- 3", "UNITY RESERVOIR - A-RVT-633901", "University Park Generator-PW26002- 6", "UNIVERSITY PARK HD-RVT-633898", "Upperglade-PW25026-15", "UPPERGLADE-PW25026-15", "US Open Temp Site 2025-PW25028-19", "USC-PW25028-45", "USC HIGH SCHOOL-RVT-633843", "VENETIA-RVT-633895", "Verita Madison, WI-PW25031- 1", "Verita Telecommunications 2025  Projects-PW25031- X", "Verizon Acheson-PW24006-35", "Verizon Altoona South-PW24008-29", "Verizon Archabold-PW24008-25", "Verizon Banksville-PW24006-42", "Verizon Beechview 13-PW24008-49", "Verizon Black Lick-PW24008-38", "Verizon Bloomfield 28-PW24008-44", "Verizon Bradys Run Park SC 3-PW24008-45", "Verizon Breezewood DT-PW24008-31", "Verizon Britton Run-PW24006-21", "Verizon Broad Top-PW24008-17", "Verizon Burrell-PW24006-27", "Verizon Camp Horne-PW24006-39", "Verizon Centre Hall-PW24008-41", "Verizon Chickasaw-PW24008-22", "Verizon Clearview Mall-PW24006-54", "Verizon Cloverdale-PW24008-20", "Verizon Clyde West-PW24008-26", "Verizon Co-Lo Daisytown East-PW24001- 8", "Verizon Co-Lo Pine Hall-PW24006-11", "Verizon Co-Locates 2025 Place Holder-PW25026- X", "Verizon Co-Locates 2026 Place Holder-PW26001- X", "Verizon Connellsville Center-PW24006-31", "Verizon Crafton 5-PW24008-42", "Verizon Cultural District-PW24006-36", "Verizon Edgewood 10-PW24008-43", "Verizon Elizabeth Bridge-PW24006-23", "Verizon Ellwood City 5-PW24008- 4", "Verizon Ellwood City South-PW24008-47", "Verizon Fairhope-PW24006-40", "Verizon Fredericksburg-PW24006-52", "Verizon Geneva College-PW24008-35", "Verizon Greensburg East SC 4-PW24064- 1", "Verizon Greensburg East SC 5-PW24064- 2", "Verizon Haven Park-PW24006-29", "Verizon Highland Park 26-PW24008- 7", "Verizon Indiana NE-PW24006-34", "Verizon Indiana South-PW24006-28", "Verizon Karthaus-PW24006-33", "Verizon Kellytown-PW24006-32", "Verizon Kirkwood-PW24008-13", "Verizon Landline Placeholder-PW25068- X", "Verizon Landline Placeholder 2026-PW26007- X", "Verizon Latrobe Small Cell-PW24008-33", "Verizon Laurel Gardens Awning-PW24008-11", "Verizon Lone Pine-PW24006-25", "Verizon Matrix Archibold-PW24006-20", "Verizon Matrix Bellefonte-PW24006-24", "Verizon Matrix Coolville-PW24006-14", "Verizon Matrix East Finely-PW24006-17", "Verizon Matrix Milesburg-PW24006-16", "Verizon Matrix New Salem-PW24006-18", "Verizon Matrix North Dubois-PW24006-19", "Verizon Matrix Presque Isle Bay-PW24006-12", "Verizon Matrix Ridgeway DT-PW24006-15", "Verizon Medlar Field-PW24008-15", "Verizon Medlar Field-PW24008-15", "Verizon Milburn South-PW24006-55", "Verizon Monessen East SC 1-PW24064- 5", "Verizon Mt Braddock SC 1-PW24064- 4", "Verizon Mt Oliver 22-PW24008- 8", "Verizon Mt Oliver 6-PW24008-14", "Verizon Mt Oliver 6-PW24008-14", "Verizon Mt Washington 4-PW24008-40", "Verizon Nemacolin-PW24006-47", "Verizon North Bethany-PW24006-60", "Verizon North Side-PW24008-27", "Verizon Oakland SC 3-PW24008-39", "Verizon Oakmont 1-PW24008- 9", "Verizon Parma South-PW24006-30", "Verizon Pemberville-PW24008-19", "Verizon Penn Run-PW24006-26", "Verizon Pine Glen-PW24006-44", "Verizon Pit Ingram 6-PW24008- 6", "Verizon Pollock Halls Cab-PW24008-37", "Verizon Portofino-PW24008-24", "Verizon Potter Mill-PW24008-16", "Verizon Raystown Lake-PW24008-30", "Verizon Red Rose-PW24006-56", "Verizon Regent Square-PW24008-10", "Verizon Return Troubleshoots-PW26002- 8", "Verizon Shadyside SC 7-PW24008- 2", "Verizon Small Cell Projects Placeholder 2024-PW24007- X", "Verizon Small Projects 2024 Placeholder-PW24008- X", "Verizon Small Projects 2025 Placeholder-PW25113- X", "Verizon Small Projects 2025 Placeholder-PW25113- X", "Verizon Small Projects 2026 Placeholder-PW26002- X", "Verizon South Clarion-PW24001-13", "Verizon South Pointe Relo-PW24006-59", "Verizon Southe Pointe Relo-PW24008-12", "Verizon Squaw Valley-PW24008-34", "Verizon Squirrel Hill 5-PW24008- 5", "Verizon Strip District HD Upgrade-PW24006-41", "Verizon Swisshelm 5-PW24008- 3", "Verizon Swissvale 1-PW24008-48", "Verizon Swissvale 1-PW24008-48", "Verizon Tower Bolindale East Matrix-PW24006- 8", "Verizon Tower Burketsville Matrix-PW24006- 1", "Verizon Tower Clarksburg, PA Matrix-PW24006- 5", "Verizon Tower Devils Elbow Matrix-PW24006- 6", "Verizon Tower Hopwood Matrix-PW24006- 4", "Verizon Tower Matrix 2024 Place Holder-PW24006- X", "Verizon Tower Matrix 2025 Place Holder-PW25028- X", "Verizon Tower Matrix 2026 Place Holder-PW26003- X", "Verizon Tower Northland Bowling Matrix-PW24006-10", "Verizon Tower Portage Matrix-PW24006- 2", "Verizon Tower Tridelphia Matrix-PW24006- 3", "Verizon Tower Valley Grove Matrix-PW24006- 7", "Verizon Truman Road-PW24008- 1", "Verizon Uniontown NE-PW24008-18", "Verizon Walker Building Cab-PW24008-36", "Verizon Warren-PW24008-23", "Verizon Washington SC8-PW24064- 3", "Verizon Wauseon DT-PW24008-21", "Verizon West Branch-PW24006-46", "Verizon West Winfield-PW24006-22", "Verizon Whitford Park-PW24006-53", "Verizon Wilkinsburg 12-PW24008-46", "VT6472 RCC Derby-PW25085- 3", "VTL01085 Vershire Vermont 113-PW25085- 6", "VTL06438 RCC Norwich-PW25085- 2", "Waldorf Towers-PW24071-12", "Waldorf Towers Reroof-PW26002- 7", "WALKERS MILL-RVT-633888", "Walkers Mill Ladders-PW24071- 7", "Warren Hosp SC 1-PW25027-51", "WARREN HOSPITAL SC 1 - A-RVT-633821", "Warren SC-PW26002- 2", "Washington DT C-Band Upgrade-PW26003- 7", "WAUPELANI DR - A-RVT-633889", "Waupelani Drive Generator-PW26002- 9", "Wayneburg DT Upgrade-PW25028-34", "Waynesburg-PW25028- 7", "WAYNESBURG DT-RVT-633845", "Webster Springs WV-PW26001-12", "Weirton Rooftop Upgrade-PW24006-45", "West 32nd Street Upgrade-PW25028-49", "West Deer-PW25027- 4", "West Hills-PW25028-41", "West Mifflin SC 1-PW24064-10", "West Milford-PW25026-21", "WEST MILFORD-PW25026-21", "Weston-PW25028-39", "Westshore Michigan-PW25026-22", "Westwood-PW24071-13", "Wexford Flats Upgrade-PW24006-57", "William Penn SC 1-PW24064-19", "Windstream Emergency Work-PW26054- 1", "WIRELESS EQUIPMENT CHARGES-PW26901-", "WIRELESS EQUIPMENT CHARGES-PW26901-", "WIRELESS EQUIPMENT JOB-PW24901-", "Wood Street C-Band Upgrade-PW25028-56", "Worthington PA-PW25026-28", "WVU UNIVERSITY AVE SC 2 - A-RVT-633825", "Zelienople South-PW24071-15", "Zitko Terrace-PW25028-20"];
-const DEFAULT_JOB_ADDRESSES = {"10141449 Stockbridge Route 100-PW25085- 4": "1475 Vt Route 100, Stockbridge VT 5772", "19 PA Decoms-PW25031- 2": "47059 Five Mile Rd, Plymoth MI 48170", "1st Cabinet Swap-PW25068- 1": "Aliquippa PA 15001", "2026 INSURANCE/TAX/FRINGE/COST-PW26917-": "2740 Smallman Street, PITTSBURGH PA 15222", "4 Cabinet Swaps-PW25068- 2": "Aliquippa PA 15001", "5th Avenue C-Band Upgrade-PW26003- 9": "341 4th Avenue, Pittsburgh PA 15222", "A4J0010A Sector Add-PW26017- 1": "501 Martindale Street, Pittsburgh PA 15212", "A4J0217A 5th Ave-PW26032- 3": "351 5th Ave, Pittsburgh PA 15222", "A4J1124A Anchor Upgrade-PW25061-": "7010 Valley Vista Lane, Murrysville PA 15668", "Allegheny Center-PW24064-25": "40.452100, -80.008400, Pittsburgh PA 15212", "Allegheny Tunnel Upgrade-PW25028-47": "153 W Portal Road, Berlin PA 15530", "ALLEGHENY TUNNELS-RVT-633854": "153 West Portal Road, Berlin PA", "Allison North-PW25026- 3": "1310 Grindstone Rd, Grindstone PA 15442", "ALLISON NORTH-PW25026- 3": "1310 Grindstone Rd, Grindstone PA 15442", "Ambridge Area HS SC 1-PW24064-35": "40.593268, -80.225792, Ambridge PA 15005", "Ambridge Area MS SC 1-PW24064-36": "40.593268, -80.225792, Ambridge PA 15005", "Ambridge Borough SC 1-PW24064-30": "40.602926, -80.223856, Ambridge PA 15003", "Aurora Sprint Decom-PW24019- 2": "120 St. Joseph St, Mt Oliver PA 15210", "Aurora T-Mobile Troubleshoot Projects Placeholder-PW24019- X": "Various", "B&V P430 Power Tower-PW24047-": "2107 Broadhead Rd, Aliquippa PA 15001", "Baden SC 1-PW24064-29": "40.632187, 80.226903, Baden PA 15005", "Balli Farms-PW25026-27": "Lat 38 663972 Long Neg 80 294278, Hacker Valley WV 26222", "BANKSVILLE-RVT-633899": "1817 Banksville Rd, Pittsburgh PA", "Banksville Generator-PW25113- 8": "1817 Banksville Road, Pittsburgh PA 15216", "Bates St-PW25027- 5": "101 Swineburne St, Pittsburgh PA 15213", "Bay Harbor SC 1-PW25027- 6": "42.1286, -80.1049, Erie PA 16507", "BAY HARBOR SC 1 - A-RVT-633837": "700 W Bayfront Parkway, Erie PA", "Bellefield-PW25028-52": "128 N Craig St, Pittsburgh PA 15213", "Bellwood-PW24071- 9": "2890 E Pleasant Valley Blvd, Altoona PA 16601", "Bettis Atomic SC 1-PW24064-37": "40.356389, -79.896308, Dravosburg PA 15034", "BICKMORE NORTH-RVT-633857": "38.385639, Charleston, WV WV", "Big Bear Lake-PW26001-11": "1923 Big Bear Lake Rd, Bruceton Mills WV 26525", "Bigelow Blvd 5-PW24064-53": "40.430500, -79.924300, Pittsburgh PA 15213", "Bigelow Blvd SC 3-PW25027- 9": "40.452600, -79.954200, Pittsburgh PA 15213", "Bloomfield 18-PW24064-55": "40.430500, -79.924300, Pittsburgh PA 15206", "Bloomfield 19-PW24064-48": "40.430500, -79.924300, Pittsburgh PA 15232", "Bloomfield 21-PW24064-51": "40.430500, -79.924300, Pittsburgh PA 15206", "Bloomfield 28-PW24064-45": "40.465000, -79.949700, Pittsburgh PA 15206", "Bloomfield 34-PW24064-56": "40.430500, -79.924300, Pittsburgh PA 15213", "Bloomfield 6-PW24064-42": "40.465000, -79.949700, Pittsburgh PA 15224", "Bloomfield 7-PW24064-43": "40.465000, -79.949700, Pittsburgh PA 15224", "Bloomfield SC 2-PW24096-12": "40.458640, -79.942683, Pittsburgh PA 15224", "Bluebell-PW25029- 3": "122 Bluebell St, Pittsburgh PA 15214", "Boswell East-PW25026- 1": "3232 Penn Ave, Boswell PA 15531", "BOSWELL NORTH-RVT-633874": "40.17068333, Altoona, PA PA", "Bradys Run-PW25113- 2": "40.337703, -80.3377, Beaver Falls PA 15010", "Bradys Run Park SC 1-PW24096- 1": "40.442930, -80.004548, Beaver PA 15009", "BRADYS RUN PARK SC 1-PW24096- 1": "40.442930, -80.004548, Beaver PA 15009", "Bradys Run Park SC 2-PW24096- 2": "40.442930, -80.004548, Beaver PA 15009", "BRADYS RUN PARK SC 2-PW24096- 2": "40.442930, -80.004548, Beaver PA 15009", "Bradys Run Park SC 4-PW24096- 3": "40.442930, -80.004548, Beaver PA 15009", "BRADYS RUN PARK SC 4-PW24096- 3": "40.442930, -80.004548, Beaver PA 15009", "Breezewood-PW25028-26": "191 Dell Rd, Breezewood PA 15533", "Brickmore North-PW25026-20": "11 Fola Rd, Brickmore WV 25019", "Brier Hill-PW25028-12": "74 Hatfield Rd, Grindstone PA 15442", "Brighton SC 1-PW24096- 4": "40.482021, -80.041461, Pittsburgh PA 15212", "BRIGHTON SC 1-PW24096- 4": "40.482021, -80.041461, Pittsburgh PA 15212", "Brookville-PW24071-19": "16859 Rt 22, Brookville PA 15825", "Brownsville Area HS SC 1-PW25027-26": "40.087557, -79.895878, Brownsville PA 15417", "BROWNSVILLE AREA HS SC 1 - A-RVT-633819": "1 Falcon Dr., Brownsville PA", "Brucetown Mills-PW25028-60": "39.6624, -79.6554, Bruceton Mills WV 26525", "Brush Mountain-PW25028- 9": "40.8914, -775328, Spring Mills PA 16875", "Buckeystown-PW25028-35": "1130 Buckeystown Pk, Frederick MD 21703", "Buckhannon East-PW26001- 5": "97 Easterbrrok Rd, Buckhannon WV 26201", "Butler HS SC 1-PW25027-12": "40.862135, -79.919612, Butler PA 16001", "Butler HS SC 2-PW25027-13": "40.860197, -7991644, Butler PA 16001", "Calvary Cemetery-PW25029- 5": "624 Manitoba St, Pittsburgh PA 15207", "Carmichaels-PW25026-25": "698 Eighty Eight Rd, Carmichaels PA 15320", "CARMICHAELS - A-RVT-633885": "39.89246944, Morgantown, WV PA", "CARPENDALE WV-RVT-633886": "39.611288, Frederick, MD WV", "Chartiers SE-PW26001-10": "1659 Summerdale St, Pittsburgh PA 15204", "Chestnut Grove-PW25026-30": "2531 Chestnut Grove Hwy, Grampian PA 16838", "Chicora-PW25113-11": "349 Cherry Rd, Chicora PA 16025", "CL10088B-PW26032- 1": "6960 Liberty Rd, Solon OH 44139", "CL23004A Power Tower Upgrade-PW26032- 4": "38600 Bainbridge Road, Solon OH 44139", "Clark Bar C Band Upgrade-PW25028-53": "128 N Craig St, Pittsburgh PA 15213", "Claysburg-PW25028-32": "150 Rose Hill Ln, Claysburg PA 16662", "Clearfield-PW25028-22": "463 Independent Road, Woodland PA 16881", "Clearfield Airport-PW25028- 5": "41.0394, -78.4431, Clearfield PA 16830", "Clover Run-PW25028- 4": "1353 Power House Rd, Mahaffey PA 15757", "Clyde-PW25026-24": "756 Clyde Rd, Florence PA 15944", "Conway DT SC 1-PW24064-33": "40.662210, 80.237880, Conway PA 15027", "Conway South SC 1-PW24064-28": "40.648414, 80233763, Baden PA 15005", "Cooks Forest-PW25028- 8": "41.4179, -79.2127, Marienville PA 16239", "Craigsville-PW25026-12": "18031 Webster Rd, Craigsville WV 26205", "CRAIGSVILLE-PW25026-12": "18031 Webster Rd, Craigsville WV 26205", "Cranberry SC-PW25113- 4": "40.7050, -80.0608, Cranberry Township PA 16066", "Cranberry Twp SC 3-PW26002-11": "40.695456, -80.137327, Cranberry PA 16066", "Cranberry Twp SC 4-PW26002-12": "2674 Rochester Rd, Cranberry PA 16066", "Cranberry Twp SC 5-PW26002-13": "40.709134, -80.126054, Cranberry PA 16066", "Cresson-PW25028-46": "8214 Adiral Perry Hwy, Cresson PA 16630", "Crown Aliquippa-PW24014-13": "1306 Airport Road, Aliquippa PA 15001", "Crown Bluebelle-PW24014- 3": "122 Bluebelle St, Pittsburgh PA 15214", "Crown Calvery Cemetery-PW24014- 2": "624 Manitoba St, Pittsburgh PA 15207", "Crown Castle Communications 2025 Projects-PW25029- X": "Various, Pittsburgh PA 15222", "Crown Castle Communications 2026 Projects-PW26004- X": "Various, Various PA 15222", "Crown Fix-PW24071-14": "587 Virginia Dr, Belle Vernon PA 15021", "Crown Fix 2-PW24071-18": "1708 Beaver Run Rd, Greensburg PA 15601", "Crown Fox Chapel-PW24014-14": "123 Field Club Rd, Pittsburgh PA 15238", "Crown Greensburg-PW24014-15": "130 Mt Odin Park Rd, Greensburg PA 15601", "Crown Lighting-PW24014- 6": "2000 Corporate Dr, Canonsburg PA 15317", "Crown Middle Road Fence-PW24014-20": "2036 Middle Road, Glenshaw PA 15116", "Crown Monroeville-PW24014-10": "130 Seco Rd, Monroeville PA 15146", "Crown Moose Property-PW24014-17": "133 Stonepile Rd, New Wilmington PA 16142", "Crown New Castle-PW24014-18": "530 South Cascade St, New Castle PA 16101", "Crown New Kensington-PW24014-16": "2001 Logan Ferry Rd, New kensington PA 15068", "Crown North Park-PW24014- 9": "40. 35255, -80.00365, Allison Park PA 15101", "Crown PA Airport Moon 2-PW24014- 5": "451 Moon Clinton Road, Moon Township PA 15108", "Crown PIT 96UV-PW24014- 4": "386 Tulip Dr, New Brighton PA 15066", "Crown Repairs-PW25027-40": "352 Vance Station Rd, Washington PA 15301", "Crown Sewickley-PW24014-19": "331 Water Works Rd, Sewickley PA 15143", "Crown Upper St Clair-PW24014- 8": "1461 Boyce Rd, Upper St CLair PA 15241", "Crown West Deer-PW24014-11": "40.3955 ,- 79.55141, West Deer PA 15006", "Crown West End-PW24014-12": "1327 Hassler St, Pittsburgh PA 15220", "CUP SC 6-PW25027- 2": "40.066600, -79.892500, California PA 15419", "DAISYTOWN EAST-RVT-633869": "40.318929, Altoona, PA PA", "Davis WV-PW26001-13": "1074 Mid Mountain Drive, Davis WV 26260", "DEA Echo 7-PW24067-": "1195 Marathon Dr, Pittsburgh PA 15212", "Delmont SC 1-PW25027-21": "40.400556, -79.586132, Delmont PA 15626", "Dunbar South-PW25026- 5": "98 Franklin Circle, Dunbar PA 15431", "DUNBAR SOUTH  - A-RVT-633878": "39.96238805, Morgantown, WV PA", "E335 Power Study-PW26011- 3": "11781 Edinboro Rd, Ediboro PA 16412", "EAST COLLEGE AVE-RVT-633851": "646 East College Avenue, State College PA", "East College Avenue Upgrade-PW26003-10": "646 E College Avenue, State College PA 16801", "East End-PW25028- 1": "241 Rural Ln, Chester WV 26034", "East Greensburg SC 2-PW25113- 5": "Lat 40 308900 Long Neg 79 591700, Greensburg PA 15601", "East Liberty 1-PW24064-40": "40.460600, 79.932500, Pittsburgh PA 15206", "East Ohio Street C-Band Upgrade-PW25028-59": "528 E Ohio St, Pittsburgh PA 15212", "Economy Fire SC 1-PW24064-27": "40.619275, 80.193758, Ambridge PA 15003", "Economy Upgrade-PW24096- 6": "2858 Conway Wallrose Rd, Baden PA 15005", "Edgebrook Relo-PW25026-19": "1050 Creedmore Court, Pittsburgh PA 15226", "Elizabeth Fwd SC 1-PW24064-11": "40.256164, -79.853952, Elizabeth PA 15037", "ELLWOOD CITY NORTH-RVT-633900": "537 LEXIE LANE, Ellwood City PA", "Ellwood City North Generator Add-PW26002-15": "537 Wurtemburg Rd, Ellwood City PA 16117", "Envelope Fix-PW25027-49": "3101 Mccully Rd, Allison Park PA 15101", "Excelsior North-PW26001- 9": "Lat 38 980761 Long Neg 80 129111, Buckhannon WV 26201", "EXCELSIOR NORTH-PW26001- 9": "Lat 38 980761 Long Neg 80 129111, Buckhannon WV 26201", "Fairchance-PW24006-62": "13 Jackie Frank Rd, Smithfield PA 15478", "Fallen Timber-PW24071- 2": "4802 Jerome Rd, Maumee OH 43537", "Fan Replacement #1-PW24071- 1": "40.406500, -80.026500, Pittsburgh PA 15216", "Farmington-PW25028-11": "405 Skyline Rd, Farmington PA 15437", "Fence Repair-PW25029- 4": "82 Hafner Rd, Pittsburgh PA 15223", "Fola-PW25026-26": "38.3521, -81.1147, Indore WV 25111", "FOUR SEASONS CAMP-RVT-633887": "39.9743241, Pittsburgh, PA PA", "Francioni Hill 11-PW25027-43": "40.447107, -80.011495, Glenshaw PA 15116", "Friendsville-PW25028-40": "864 New Gravel Hill Rd, Friendsville MD 21531", "Gauley Bridge Co-Locate-PW25026-18": "500 Conley Ln, Gauley Bridge WV 25085", "Generator Fueling-PW25029- 8": "40.3955, - 79.55141, Pittsburgh PA 15222", "Geneva College SC 1-PW25113- 1": "40.7709, -903.324402, Beaver Falls PA 15010", "Glen East-PW26001- 6": "916 Clines Branch Rd, Indore WV 25111", "GLEN EASTON-RVT-633863": "39.88727778, Wheeling, WV WV", "Glen Easton Colo-PW25026-11": "11647 Waynesburg Pike, Cameron WV 26033", "Glen Savage-PW25028-10": "419 Glen Savage Rd, Fairhope PA 15538", "Goldtown-PW25028-43": "357 Duff Hill Rd, Kenna WV 25248", "Gray 2 - 816616-PW25029-12": "Long Hill Rd, Gray ME 4039", "Greater Latrobe HS SC 1-PW25027-22": "40.27880, -79.377800, Latrobe PA 15609", "Greater Latrobe HS SC 2-PW25027-23": "40.279500, -79.374200, Latrobe PA 15609", "Greenfield 3-PW24064-50": "40.430500, -79.924300, Pittsburgh PA 15207", "Greenfield 5-PW24064-41": "40.426200, -79.940000, Pittsburgh PA 15207", "Greensburg MS SC 1-PW25027-27": "40.306300,  -79.545600, Greensburg PA 15417", "GREENSBURG MS SC 1 - H-RVT-633822": "301 N Main St, Greensburg PA", "Harrisville East-PW25026- 9": "41.140870, -79.995619, Harrisville PA 16038", "HARRISVILLE EAST-PW25026- 9": "41.140870, -79.995619, Harrisville PA 16038", "Hempfield Park Colo-PW26001- 4": "666 Forbes Trail Rd, Greensburg PA 15601", "Heritage Power Placeholder-PW25091- X": "Various, VARIOUS PA 15222", "HIBBS - B-RVT-633879": "39.938114, Morgantown, WV PA", "Hibbs Colo-PW25026-13": "150 Murphy Road, Adah PA 15410", "Highland ES SC 1-PW24064-31": "40.594080, -80.215127, Ambridge PA 15003", "Highland Park 17-PW24064-58": "40.470800, -79.917800, Pittsburgh PA 15206", "Highland Park 26-PW25027-44": "40.447107, -80.011495, Pittsburgh PA 15206", "Highland Park 3-PW24064-47": "40.430500, -79.924300, Pittsburgh PA 15206", "HILEMAN HEIGHTS-RVT-633849": "1101 Flamingo Drive, Altoona PA", "Hileman Heights Upgrade-PW25028-31": "1101 Flamingo Drive, Altoona PA 16602", "Hill District-PW25027-15": "2055 Bedford Ave, Pittsburgh PA 15219", "HILLER-RVT-633844": "111 Everview Dr, Brownsville PA", "Holerby Hall-PW25027-47": "1672 6th Avenue, Huntington WV 25703", "Holiday Park SC 1-PW24064-18": "40.463564, -797050066, Plum PA 15135", "Holiday Park SC 2-PW24064-16": "40.479625, -79.707675, Pittsburgh PA 15239", "Homeville SC 1-PW24064-15": "40.388139, -79.8752369, West Mifflin PA 15122", "Hookstown-PW25027- 8": "260 Pittsburgh Grade Rd, Hookstown PA 15050", "Hopkinton Mechanic Street-PW25085- 8": "1 Mechanical Street, Hopkinton MA 7148", "HUNKER-RVT-633883": "40.203844, Pittsburgh, PA PA", "Huntingdon SW-PW25106-": "10282 Whitetail Ridge Rd, Smithfield PA 16652", "HUNTINGDON SW-PW25106-": "10282 Whitetail Ridge Rd, Smithfield PA 16652", "Huntingdon SW Colo-PW25026-29": "10284 Whitetail Ridge Rd, Huntingdon PA 16652", "INDIAN LAKE - B-RVT-633892": "701 Shore Trl, Central City PA", "Indian Lake Generator-PW25113-12": "701 S Shore Trl, Central City PA 15926", "INDIANA SOUTH-RVT-633894": "1001 Hospital Rd., INDIANA PA", "Indiana Theater Upgrade-PW24006-48": "637 Philadelphia St, Indiana PA 15701", "Irwin SC 4-PW25027-29": "40.3233, -79.6934, Irwin PA 15642", "IRWIN SC 4 - A-RVT-633823": "1500 9th Ave, Irwin PA", "IUP C-Band Upgrade-PW25028-57": "470 S 11th Street, Indiana PA 15705", "Jackson Mills-PW25028-54": "1741 S Breezewood Rd, Breezewood PA 15533", "Jackson SC 4-PW25027-19": "40.334612, -79.705245, Irwin PA 15642", "January Trouble Tickets-PW26004- 1": "170 Lindley Rd, Canonsburg PA 15317", "Jeannette East-PW25026- 8": "241 Amps K Hutchinson Ln, Jeannette PA 15644", "JEANNETTE EAST - E-RVT-633862": "40.31598611, Pittsburgh, PA PA", "Jeannette East Generator Project-PW26002-14": "241 Amos K Hutchinson Lane Tpke, Jeannette PA 15644", "Kaese Mill-PW25028-44": "359 Accident Garage Rd, Accident MD 21520", "KANAWHA CITY-RVT-633853": "4420 MacCorkle Avenue SE, Charleston WV", "Kenebunk ME Port Road-PW25085-10": "169 Port Road, Kennebunk ME 4043", "Kidders Corner North-PW25026- 6": "7051 Rt 215, Girard PA 16417", "KIDDERS CORNER NORTH-PW25026- 6": "7051 Rt 215, Girard PA 16417", "Kinettix Fiber-PW25032- 1": "11279 Cornell Park Dr, Cincinnati OH 45201", "Kinettix Misc Small Projects-PW25032- X": "Various, Various PA 15222", "Kinzua Dam-PW25028-37": "1937 Hemlock Rd, Warren PA 16365", "Kittanning NE-PW25026- 4": "323 Cowanshannock Rd, Kittanning PA 16201", "KITTANNING NE - A-RVT-633877": "40.85575833, Pittsburgh, PA PA", "LABORATORY WEST - G-RVT-633815": "40.154392, PA", "Latrobe SC 8-PW25027-37": "40.410048, -79.987214, Latrobe PA 15650", "Lawrenceville 8-PW24064-39": "40.466500, -79.956500, Pittsburgh PA 15201", "Leeper-PW24006-61": "31257 Rt 66, Lucinda PA 16235", "Lernersville Speedway-PW26001- 3": "354 N Pike Rd, Sarver PA 16055", "Lewistown Narrows-PW25028-24": "30 Upper Hawsbrick St, Lewistown PA 17044", "Libert Center SC 1-PW25027- 7": "3600 Liberty St, Erie PA 16508", "LIBERTY CENTER SC 1 - C-RVT-633836": "3600 Liberty Street, Erie PA", "Lickingville-PW26001- 2": "119 Putnam Rd, Tionesta PA 16353", "Lickingville PA-PW25120-": "23862 Rt 208, Lickingville PA 16353", "Lightning Rod-PW25029- 9": "170 Lindley Rd, Canonsburg PA 15317", "LINCOLN NORTH-RVT-633884": "40.30259167, Pittsburgh, PA PA", "Longview-PW25028-29": "10702 Buckhannon Rd, Volga WV 26238", "LONGVIEW-PW25028-29": "10702 Buckhannon Rd, Volga WV 26238", "Lycippus-PW24064-22": "40.2253, -79.4450, Latrobe PA 15650", "Maine Ericsson Placeholder-PW25085- X": "Various, VARIOUS ME 15222", "Maine Ericsson Placeholder 2026-PW26006- X": "Various, VARIOUS ME 15222", "Manchester Generator Removal Cam Lock Install-PW25113- 9": "1025 Beaver Avenue, Pittsburgh PA 15233", "Manchester RT Upgrade-PW24071-20": "1025 Beaver Ave, Pittsburgh PA 15233", "March Trouble Tickets-PW26004- 2": "170 Lindley Rd, Canonsburg PA 15317", "Market Square C-Band Upgrade-PW25028-55": "204 5th Ave, Pittsburgh PA 15222", "Marshall Twp SC 1-PW25027-24": "40.641146, -80.136447, Baden PA 15005", "Mas Repair-PW24014- 7": "106 Jenelle Ln, Butler PA 16001", "MCLAUGHLIN RUN-RVT-633852": "1520 MCLAUGHLIN RUN RD, Pittsburgh PA", "McPherron-PW25028-23": "805 Blake Rd, La Jose PA 15753", "ME1907 Sidney 1-PW25085- 7": "2710 Middle Road, Sidney ME 4330", "Meadville Dt-PW24071- 4": "890 Mulberry St, Meadville PA 16335", "MEADVILLE DT - A-RVT-633902": "890 Mulberry Street, Meadville PA", "MEL01252 NWN Van Buren-PW25085- 5": "22 Marquis Road, Van Buren ME 4785", "Meyers Run-PW25028-27": "645 Lucas Ridge Rd, Snow Shoe PA 16874", "MEYERS RUN - A-RVT-633846": "Lucas Ridge Road, Moshannon PA", "MON VALLEY HOSPITAL - C-RVT-633876": "40.18746388, Pittsburgh, PA PA", "Monroeville SC 2-PW24096-11": "40.438693, 79.766144, Monroeville PA 15146", "MONROEVILLE SC 2 - B-RVT-633841": "4080 William Penn Hwy unit 49, Monroeville PA", "MORGANTOWN SC 2 - A-RVT-633818": "498 Fife Avenue, Morgantown WV", "MORGANTOWN SC 3 - A-RVT-633826": "705 N High Street, Morgantown WV", "Morgantown SC 4-PW25113- 3": "39.6353, -79.94900, Morgantown WV 26505", "MORGANTOWN SC 4 - A-RVT-633817": "826 Price Street, Morgantown WV", "Morgantown US Cell Switch-PW25062-": "800 River Rd, Morgantown WV 26501", "Mount Royal-PW25029- 6": "2510 Mt Royal Blvd, Glenshaw PA 15116", "Mountain View-PW25027-14": "270 Sand Hill Rd, Greensburg PA 15601", "Mt Morris-PW25028-33": "128 Slag Rd, Mount Morris PA 15349", "Mt Oliver 7-PW25027-46": "40.447107, -80.011495, Pittsburgh PA 15210", "Mt Vernon SC 1-PW24064-17": "40.291504,-79.811623, Mckeesport PA 15135", "MT. MORRIS HD-RVT-633850": "102 WADES RUN RD, Mt. Morris PA", "Mulga-PW25028- 6": "2826 Hollingshead Rd, Wellston OH 45692", "Myersville-PW25028-48": "66 Canda Hill, Myersville MD 21773", "N PGH Telco-PW25028-50": "4008 Gibsonia Rd, Gibsonia PA 15044", "Nettie-PW25026-23": "38.226610, -80.691400, Nettie WV 26681", "NETTIE-PW25026-23": "38.226610, -80.691400, Nettie WV 26681", "Nettie West-PW25026-14": "10061 Canvas Nettie Rd, Nettie WV 26681", "NETTIE WEST-PW25026-14": "10061 Canvas Nettie Rd, Nettie WV 26681", "Newlonsburg SC 1-PW25027-33": "40.425600, -79.673500, Murrysville PA 15668", "NEWLONSBURG SC 1 - B-RVT-633830": "4386 William Penn Hwy -POLE ON ANDREWS, Murrysville PA", "Newlonsburg SC 2-PW25027-32": "40.425600, -79.673500, Murrysville PA 15668", "NEWLONSBURG SC 2 - A-RVT-633824": "South Side of 4548 William Penn Hwy, Murrysville PA", "Newlonsburg SC 3-PW25027-28": "40.4245, -79.6669, Murrysville PA 15668", "NEWLONSBURG SC 3 - B-RVT-633829": "4725 Old William Penn Hwy-POLE ON SCHOOL RD, Murrysville PA", "Newlonsburg SC 4-PW25027-34": "40.425600, -79.673500, Murrysville PA 15668", "Newton-PW25027-16": "12460 Clay Rd, Newton WV 15219", "NFL Draft-PW25027-41": "40.447107, -80.011495, Pittsburgh PA 15212", "NFL Draft East Temp Site-PW26003- 1": "358 North Shore Drive, Pittsburgh PA 15212", "NFL Draft Stage Fiber DES-PW26002- 1": "792 W General Robinson Street, Pittsburgh PA 15212", "North Shore-PW26003- 6": "668 W General Robinson St, Pittsburgh PA 15212", "North Side Generator-PW25029-10": "1195 Marathon St, Pittsburgh PA 15212", "North Springfield-PW25026- 7": "41.986690, -80.425900, East Springfield PA 16411", "NORTH SPRINGFIELD-PW25026- 7": "41.986690, -80.425900, East Springfield PA 16411", "North Strabane-PW24064-23": "2095 Washington Rd, Washington PA 15301", "NWN Belfast-PW25085-15": "27 Cindee Lane, Belfast ME 4915", "NWN Fort Fairfield-PW25085-12": "253 Forest Ave, Fort Fairfield ME 4742", "NWN Northpot West-PW25085-13": "108 Ryan Road, Northport ME 4849", "NWN Sears Island-PW25085-14": "125 Sears Island Rd, Searsport ME 4974", "NWN St David-PW25085-11": "209 Lavertu Road, Saint David ME 4773", "Oakland-PW26003- 4": "3801 University Drive, Pittsburgh PA 15222", "Oakland 11-PW24064-54": "40.430500, -79.924300, Pittsburgh PA 15213", "OAKLAND HD-RVT-633842": "3801 UNIVERSITY DRIVE, PITTSBURGH PA", "Oblock SC 1-PW24064- 8": "40.481576, -79.757834, Pittsburgh PA 15239", "Ohiopyle-PW25028- 2": "39.8812, -79.4726, Mill Run PA 15641", "Olgebay Altl-PW24064-26": "1007 Olgebay Dr, Wheeling WV 26003", "Overhead-PW25085- 1": "Various, VARIOUS ME 15222", "P697 Co Locate AT&T-PW26011- 1": "18 Mt Pleaseant Road, Scottsdale PA 15683", "P737 Co Locate AT&T-PW26011- 2": "412 Coal Valley Road, Clairton PA 15025", "P745 Power Studies-PW26011- 4": "500 Blackhawk Rd, Beaver Falls PA 15010", "PA Ericsson Placeholder-PW25094- X": "Various, VARIOUS PA 15222", "PA Ericsson Placeholder 2026-PW26005- X": "Various, VARIOUS PA 15222", "Park Hills-PW25028-18": "992 Mixon Rd, State College PA 16803", "Parkway Center C-Band Upgrade-PW25028-58": "875 Greentree Rd, Pittsburgh PA 15220", "Peach St Square SC 1-PW25027-30": "42.056006, -80.086672, Erie PA 16509", "Peach St Square SC 2-PW25027-31": "42.056006, -80.084703, Erie PA 16509", "PEACH STREET SQUARE SC 1 - A-RVT-633833": "1935 Keystone Dr, Summit Township PA", "PEACH STREET SQUARE SC 2 - A-RVT-633832": "100 Mandy lane, Summit Township PA", "Penn State Main 12-PW24096- 8": "40.8169, 77.8466, State College PA 16801", "Penn State Main 16-PW24096- 7": "40.813665, 77.858506, State College PA 16801", "Penn State Main 27-PW25027-17": "Search Ring, State College PA 16801", "Penn State Main SC 6-PW24096-10": "40.822492, -77867395, State College PA 16803", "Penn State SC 64-PW24096-13": "40.813665, 77.858506, State College PA 16801", "Penn Tower Upgrade-PW24006-49": "255 E Beaver Ave, State College PA 16801", "Pennsville Gen-PW24071- 6": "217 Everson Valley Rd, Connellsville PA 15425", "PERRYSVILLE AVE - B-RVT-633897": "122 Bluebell Street, Pittsburgh PA", "Peters-PW24064-24": "122 Druid Dr, Canonsburg PA 15317", "Peters Twp SC 1-PW25027-48": "40.269, -80.1177, Canonsburg PA 15317", "PIT V96T-PW25029- 7": "302 Tower Rd, Tarentum PA 15084", "PIT_HIGHLAND_PARK_0026_W2 - A-RVT-633831": "621 Mellon St, Pittsburgh PA", "Pitt Triangle SC 7-PW24096- 5": "40.442930, -80.004548, Pittsburgh PA 15222", "PITT TRIANGLE SC 7-PW24096- 5": "40.442930, -80.004548, Pittsburgh PA 15222", "Pittsburgh Zoo Wifi Install-PW25095-": "One Wild Place, Pittsburgh PA 15206", "PIVIK ES SC 1-PW24064-34": "40.4932.09, -79.754770, Pittsburgh PA 15239", "Pointbreeze 17-PW24064-52": "40.430500, -79.924300, Pittsburgh PA 15208", "Porter Falls-PW26001- 8": "7584 Shortline Hwy, Reader WV 26167", "PORTERS FALLS-RVT-633882": "39.57441833, Wheeling, WV WV", "Power Plant Replacements-PW26060-": "111 Hardwood Street, Pittsburgh PA 15211", "Prattsville-PW25028-17": "68823 Us Hwy 50, McArthur OH 45651", "Propel School SC 1-PW24064-12": "40.409124, -79.815284, Turtle Creek PA 15145", "Propel Schools SC 1-PW24064-14": "\"seach Ring\", Pitcairn PA 15140", "Prospect Dt-PW26003- 8": "159 Monroe St, Prospect PA 16052", "Prospect DT-PW26003- 8": "159 Monroe St, Prospect PA 16052", "Prospect ME Heagan Mnt Rd-PW25085- 9": "207 Heagan Mountain Rd, Prospect ME 4981", "PSU Football SC 25-PW24096- 9": "40.808380, -77.85775, University Park PA 16802", "PSU Pollock Halls Upgrade-PW25028-15": "504 Pollock Road, State College PA 16801", "PSU Walker Building Upgrade-PW24006-58": "210 N Burrowes Upgrade, State College PA 16801", "PSU Wartik Labs Upgrade-PW25028-14": "344 Shortlidge Rd, State College PA 16802", "PWL00409 Ohioville-PW25094- 2": "131 Lisbon Road, Beaver PA 15009", "PWL02083-PW25094- 1": "10 Rhoda St Farrell, Mercer PA 16121", "Pymatuming North-PW26001- 1": "14642 Airport Rd, Linesville PA 16424", "Radio Swaps-PW25027-36": "40.410048, -79.987214, Pittsburgh PA 15210", "Regent Square 7-PW24064-57": "40.430500, -79.924300, Pittsburgh PA 15218", "RESTLAND MEMORIAL PARK-RVT-633893": "2465 Johnston Road, Monroeville PA", "Return Troubleshoots-PW25028-42": "12951 Raystown Rd, Hesston PA 16647", "Roanoke-PW25028-51": "100 Christmas Pl, Weston WV 15044", "Rockingham VT VT6301-PW26008- 1": "160 Gaskill Road, Rockingham VT 5143", "Rogersville-PW25028-13": "307 Tower Rd, Rogersville PA 15359", "RPR-PW25029- 2": "2000 Corporate Dr, Canonsburg PA 15317", "S LATROBE SC 8 - F-RVT-633827": "1596 MISSION RD, LATROBE PA", "SARDIS RD-RVT-633861": "40.462139, Pittsburgh, PA PA", "SBA T-MOBILE UPGRADES 2024-PW24005- X": "Various, PGH PA 15222", "Schweibinzville-PW25028-16": "947 Faidley Rd, Markleton PA 15551", "Scott Twp Asphalt Repair-PW25027-52": "101 Manorview Rd, Pittsburgh PA 15220", "September Radio Swaps-PW25027-50": "40.453200, -79.99200, Pittsburgh PA 15218", "Seven Points-PW25026-17": "5244 Bunker Hill Rd, Hesston PA 16647", "SEVEN POINTS RD-RVT-633860": "40.39536111, Altoona, PA PA", "Shadyside 24-PW24064-49": "40.430500, -79.924300, Pittsburgh PA 15232", "Shadyside SC 5-PW25027- 1": "40.451663, -79.931506, Pittsburgh PA 15232", "Shawville Lighting Repair-PW25091- 2": "250 Power Plant Rd, Shawville PA 16873", "Shirleysburg-PW25027-18": "11730 Mcclure Mills Ln, Shirleysburg PA 17260", "Shookstown-PW25028-36": "7840 Old Receiver Rd, Frederick MD 21703", "Shroud Replacements-PW24064-21": "Lat 40 426900 Long Neg 80 001400, Pitsburgh PA 15211", "Shrouds-PW25027-39": "40.427600, -79.984200, Pittsburgh PA 15203", "Sidman South-PW26001- 7": "128 Rhodes Cross Rd, Sidman PA 15955", "Site #99-PW26003- 3": "2 Catoctin Hollow Rd, Thurmont MD 21788", "Small Cell Troubleshoot-PW24071- 5": "40.416700, -79 982600, Pittsburgh PA 15210", "Small Cell Troubleshoots-PW26002- 3": "40.428, -79.8800, Edgewood PA 15218", "Small Cell TS-PW25027-20": "40.581516, -79.566412, Apollo PA 15613", "Small Random Projects-PW26002- 4": "2172 Skyline Dr, Home PA 15747", "Smethport HS SC 1-PW25027-25": "41.804691, -78.441742, Smethport PA 16749", "SMETHPORT HS SC 1 - P-RVT-633820": "410 S Mechanic St, Smethport PA", "South Allegheny EDU SC 1-PW24064- 6": "40.322517, -79.848704, Mckeesport PA 15333", "South Allegheny SC 1-PW24064-13": "40.331726, -79.881033, Mckeesport PA 15133", "South Allen Street Upgrade-PW24006-50": "1315 S Allen Street, State College PA 16801", "SOUTH CLARION-RVT-633866": "41.18233889, Erie, PA PA", "South Greenock SC 1-PW24064- 7": "40.312306, -79802513, Mckeesport PA 15135", "SOUTH PARK TWP-RVT-633873": "40.27747, Pittsburgh, PA PA", "Southside Area HS SC 1-PW24064-32": "40.569086, 80.436317, Hookstown PA 15050", "SPRING HILL - C-RVT-633890": "4067 Springhill Road, Portage PA", "Spring Hill Generator-PW26002-10": "425 Waupelani Dr, State College PA 16801", "Squirrel Hill 32-PW25027-42": "40.447107, -80.011495, Pittsburgh PA 15212", "Squirrel Hill 66-PW24064-46": "40.430500, -79.924300, Pittsburgh PA 15217", "Squirrel Hill 67-PW25027-35": "40.432122, -79.918535, Pittsburgh PA 15217", "STANWIX HD C-BAND ADD-PW25028-61": "201 Stanwix St, Pittsburgh PA 15222", "STARPOINTE-RVT-633871": "40.430678, Pittsburgh, PA PA", "Starpointe Colocate-PW25026- 2": "1061 Old Route 22, West Burgettstown PA 15201", "Station Square Upgrade-PW25028-38": "4 E Station Square Drive, Pittsburgh PA 15219", "Steel Valley SC 1-PW24064- 9": "40.390357, -79.897426, Homestead PA 15120", "Stoops Ferry-PW24071-11": "201 Fern Hollow Rd, Coraopolis PA 15108", "Storm Generators-PW25029-11": "2001 Logans Ferry Rd, New Kensington PA 15068", "STRABANE WEST-RVT-633872": "40.265998, Pittsburgh, PA PA", "Strabane West Colo-PW25026-10": "40.266091, -80.227748, Houston PA 15342", "Strawn-PW25028-21": "2667 National Pike, Grantsville MD 21536", "Sulphur City-PW25026-16": "3417 Elk Garden Hwy, Elk Garden WV 26717", "SULPHUR CITY-PW25026-16": "3417 Elk Garden Hwy, Elk Garden WV 26717", "Summit Village-PW25028-25": "628 Alpha Bravo Rd, Glen Jean WV 25846", "SUTERSVILLE - C-RVT-633896": "1586 Mars Hill Road N/A N/A, Sutersville PA", "SY91437A-PW26044- 1": "1073 Us 250 N, Norwalk OH 44857", "SY91437A PO2885-PW26046-": "1073 Us 250 N, Norwalk OH 44857", "T-Mobile A4J0354B-PW24002- 7": "3320 Laurel Rd, Glenshaw PA 15116", "T-Mobile Allegheny Tunnel testing-PW26032- 2": "153 Portal Rd, BERLIN PA 15530", "T-Mobile CL12407F-PW24002- 6": "3930 King Edward Ct, Willoughby OH 44094", "T-Mobile CL31320A Power Tower-PW24002- 4": "6200 Oak Tree, Independence OH 44131", "T-Mobile Matrix Projects 2024 Place Holder-PW24002- X": "Tbd, TBD PA 15222", "T-Mobile Matrix Projects 2025 Place Holder-PW25030- X": "Tbd, TBD PA 15222", "T-Mobile Projects 2026 Place Holder-PW26017- X": "Tbd, TBD PA 15222", "Tag Towers Placeholder-PW25099- X": "Various, VARIOUS PA 15222", "Taylor Allderdice HS SC 1-PW24064-44": "40.465000, -79.949700, Pittsburgh PA 15217", "Ten Mile-PW25028-28": "200 Dividing Ridge Rd, Amity PA 15311", "Terminal Building Matrix Upgrade-PW24006-51": "51 Terminal Way, Pittsburgh PA 15219", "The Summit-PW25028- 3": "3000 Arrowhead Rd, Glen Jean WV 25846", "THE SUMMIT VILLAGE A-RVT-633848": "628 Alpha Bravo Road, Glen Jean WV", "Troubleshoot 2-PW24071-10": "40.773465, -80.321175, Beaver Falls PA 15010", "Troubleshoot 3-PW24071-17": "40.427200, -79.988500, Pittsburgh PA 15203", "Tuscarora Tunnel Upgrade-PW26003- 2": "Lat 40 0874 Long Neg 77 8358 186, Shade Gap PA 17255", "Tyrone SC 1-PW25027-38": "40.681589, -78.244071, Tyrone PA 16686", "TYRONE SC 1 - B-RVT-633816": "1751 Hamilton Ave, Tyrone PA", "UNIONTOWN AREA HS SC 1 - D-RVT-633828": "89 S Grant Street, Uniontown PA", "Uniontown Bank-PW26003- 5": "52 W Main St, Uniontown PA 15401", "Uniontown Bank Generator Room TS-PW26002- 5": "52 W Main St, Uniontown PA 15401", "Uniontown HS SC 1-PW25113- 7": "40.894839, - 79.718207, Uniontown PA 15401", "Unity Reservoir-PW25027- 3": "3139 Mcclellan Dr, Greensburg PA 15601", "UNITY RESERVOIR - A-RVT-633901": "111 Radio Lane, Greensburg PA", "University Park Generator-PW26002- 6": "2477 N Atherton St, State College PA 16803", "UNIVERSITY PARK HD-RVT-633898": "2477 N. ATHERTON STREET, STATE COLLEGE PA", "Upperglade-PW25026-15": "455 Dennison Run Rd, Upperglade WV 26266", "UPPERGLADE-PW25026-15": "455 Dennison Run Rd, Upperglade WV 26266", "US Open Temp Site 2025-PW25028-19": "1215 Hulton Road, Oakmont PA 15391", "USC-PW25028-45": "1825 Mclaughlin Run Rd, Pittsburgh PA 15241", "USC HIGH SCHOOL-RVT-633843": "1825 McLaughlin Run Rd, Upper St. Clair PA", "VENETIA-RVT-633895": "301 Beagle Club Road, FINLEYVILLE PA", "Verita Madison, WI-PW25031- 1": "47059 Five Mile Rd, Plymoth MI 48170", "Verita Telecommunications 2025  Projects-PW25031- X": "Various, Various PA 15222", "Verizon Acheson-PW24006-35": "30 Scenic Dr, Avella PA 15312", "Verizon Altoona South-PW24008-29": "400 Highland Ave, Altoona PA 16602", "Verizon Archabold-PW24008-25": "413 E Holland, Archabol OH 45302", "Verizon Banksville-PW24006-42": "1817 Banksville Road, Pittsburgh PA 15216", "Verizon Beechview 13-PW24008-49": "40.4027, -80.02900, Pittsburgh PA 15216", "Verizon Black Lick-PW24008-38": "5057 Black Lick Rd, Blairsville PA 15717", "Verizon Bloomfield 28-PW24008-44": "40.4651, -79.93200, Pittsburgh PA 15206", "Verizon Bradys Run Park SC 3-PW24008-45": "40.337703, -80.337703, Beaver Falls PA 15010", "Verizon Breezewood DT-PW24008-31": "174 Municipal Rd, Breezewood PA 15333", "Verizon Britton Run-PW24006-21": "39275 Stete Hwy 77, Centerville PA 16404", "Verizon Broad Top-PW24008-17": "3825 Chestnut St, Broad Top PA 16621", "Verizon Burrell-PW24006-27": "134 Maple Ave Ext, Blairsville PA 15717", "Verizon Camp Horne-PW24006-39": "100 Valley Hi Dr, West View PA 15229", "Verizon Centre Hall-PW24008-41": "40.8372, 77.6918, Centre Hall PA 16828", "Verizon Chickasaw-PW24008-22": "2752 St Rte 716, Maria Stein OH 45860", "Verizon Clearview Mall-PW24006-54": "1615 N Main St, Butler PA 16001", "Verizon Cloverdale-PW24008-20": "10965 Sr 634, Cloverdale OH 45827", "Verizon Clyde West-PW24008-26": "1390 Coe Ave, Clyde OH 43410", "Verizon Co-Lo Daisytown East-PW24001- 8": "305 Fulmer Rd, Johnstown PA 15094", "Verizon Co-Lo Pine Hall-PW24006-11": "1703 College Ave, State College PA 16801", "Verizon Co-Locates 2025 Place Holder-PW25026- X": "Tbd, TBD PA 15222", "Verizon Co-Locates 2026 Place Holder-PW26001- X": "Tbd, TBD PA 15222", "Verizon Connellsville Center-PW24006-31": "125 W South St, Connellsville PA 15425", "Verizon Crafton 5-PW24008-42": "40.4364, 80.0578, Pittsburgh PA 15205", "Verizon Cultural District-PW24006-36": "130 7th St, Pittsburgh PA 15222", "Verizon Edgewood 10-PW24008-43": "40.4255, -79.88560, Pittsburgh PA 15218", "Verizon Elizabeth Bridge-PW24006-23": "583 Weigles Hill Rd, Elizabeth PA 15037", "Verizon Ellwood City 5-PW24008- 4": "603 Union St, Ellwood City PA 16117", "Verizon Ellwood City South-PW24008-47": "111 Hack Wildon Dr, Ellwood City PA 16117", "Verizon Fairhope-PW24006-40": "604 Emerick Rd, Fairhope PA 15538", "Verizon Fredericksburg-PW24006-52": "17081 Round Top Rd, Meadville PA 16335", "Verizon Geneva College-PW24008-35": "40.773465, -80.321175, Beaver Falls PA 15010", "Verizon Greensburg East SC 4-PW24064- 1": "40.40861111, -80.02469444, Greensburg PA 15601", "Verizon Greensburg East SC 5-PW24064- 2": "40.296827, -79.478867, Greensburg PA 15601", "Verizon Haven Park-PW24006-29": "1015 N Mccord Rd, Toledo OH 46315", "Verizon Highland Park 26-PW24008- 7": "40.440000,- 79919700, Pittsbugh PA 15206", "Verizon Indiana NE-PW24006-34": "499 E Pike Rd, Indiana PA 15701", "Verizon Indiana South-PW24006-28": "1001 Hospital Rd, Indiana PA 15701", "Verizon Karthaus-PW24006-33": "1705 Oak Hill Rd, Karthaus PA 16845", "Verizon Kellytown-PW24006-32": "1125 Clard Rd, Olanta PA 16863", "Verizon Kirkwood-PW24008-13": "12700 E Lockinhyon Rd, Sidney OH 45365", "Verizon Landline Placeholder-PW25068- X": "Various, VARIOUS PA 15222", "Verizon Landline Placeholder 2026-PW26007- X": "Various, VARIOUS PA 15222", "Verizon Latrobe Small Cell-PW24008-33": "40.284500 -79.39200, Latrobe PA 15650", "Verizon Laurel Gardens Awning-PW24008-11": "160 6th Avenue, Pittsburgh PA 15229", "Verizon Lone Pine-PW24006-25": "256 Weaver Rd, Washington PA 15301", "Verizon Matrix Archibold-PW24006-20": "413 E Holland St, Archibold OH 43502", "Verizon Matrix Bellefonte-PW24006-24": "150 Radio Dr, Bellefonte PA 16823", "Verizon Matrix Coolville-PW24006-14": "1720 Old State Road, Coolville OH 45723", "Verizon Matrix East Finely-PW24006-17": "1610 East Finely Rd, Claysville PA 15323", "Verizon Matrix Milesburg-PW24006-16": "996 Moose Run Rd, Port Matilda PA 16870", "Verizon Matrix New Salem-PW24006-18": "701 Fairbank Herdest Rd, New Salem PA 15468", "Verizon Matrix North Dubois-PW24006-19": "3 Juniata St Ext, Dubois PA 15801", "Verizon Matrix Presque Isle Bay-PW24006-12": "17 E Dobbing Landing, Erie PA 16507", "Verizon Matrix Ridgeway DT-PW24006-15": "333 Taylor Ave, Ridgeway PA 15853", "Verizon Medlar Field-PW24008-15": "701 Porter Rd, State College PA 16801", "Verizon Milburn South-PW24006-55": "133 Stonepile Rd, New Wilmington PA 16142", "Verizon Monessen East SC 1-PW24064- 5": "40.161497, -79858712, Rostraver Township PA 15012", "Verizon Mt Braddock SC 1-PW24064- 4": "39.948925, -79654431, Lemont Furnace PA 15456", "Verizon Mt Oliver 22-PW24008- 8": "40 416700, 79 982600, Pittsbugh PA 15210", "Verizon Mt Oliver 6-PW24008-14": "40.4159000, 79985200, Pittsburgh PA 15210", "Verizon Mt Washington 4-PW24008-40": "40.425000, 80.001000, Pittsburgh PA 15211", "Verizon Nemacolin-PW24006-47": "140 Flenniken Rd, Nemacolin PA 15351", "Verizon North Bethany-PW24006-60": "2009 Hukill Run Rd, Wellsburg WV 26070", "Verizon North Side-PW24008-27": "40.4589, 80 0098, Pittsburgh PA 15212", "Verizon Oakland SC 3-PW24008-39": "40.439400, 79.967800, Pittsburgh PA 15213", "Verizon Oakmont 1-PW24008- 9": "40 526714, 79 816375, Pittsbugh PA 15139", "Verizon Parma South-PW24006-30": "9206 W Sprague Rd, Parma Heights OH 46315", "Verizon Pemberville-PW24008-19": "3638 Rees Rd, Pemberville OH 43450", "Verizon Penn Run-PW24006-26": "2106 Chestnut Ridge Road, Penn Run PA 15765", "Verizon Pine Glen-PW24006-44": "1001 Pine Glen Rd, Karthaus PA 16845", "Verizon Pit Ingram 6-PW24008- 6": "40.440000,- 80069100, Pittsbugh PA 15205", "Verizon Pollock Halls Cab-PW24008-37": "504 Pollock Halls Rd, State College PA 16801", "Verizon Portofino-PW24008-24": "9190 N Co Rd 25a, Piqua OH 45356", "Verizon Potter Mill-PW24008-16": "149 Wild Turkey Dr, Centre Hall PA 16828", "Verizon Raystown Lake-PW24008-30": "52 State Rt 3051, Huntingdon PA 16652", "Verizon Red Rose-PW24006-56": "8321 Hollow Rd, Middletown MD 21769", "Verizon Regent Square-PW24008-10": "40431300 -79894400, Pittsburgh PA 15221", "Verizon Return Troubleshoots-PW26002- 8": "Tbd, Pittsburgh PA 15017", "Verizon Shadyside SC 7-PW24008- 2": "40.452600, 79934200, Pittsbugh PA 15232", "Verizon Small Cell Projects Placeholder 2024-PW24007- X": "Various, various PA 15222", "Verizon Small Projects 2024 Placeholder-PW24008- X": "Various, VARIOUS PA 15222", "Verizon Small Projects 2025 Placeholder-PW25113- X": "Various, VARIOUS PA 15222", "Verizon Small Projects 2026 Placeholder-PW26002- X": "Various, VARIOUS PA 15222", "Verizon South Clarion-PW24001-13": "200 Carson Rd, Clarion PA 16214", "Verizon South Pointe Relo-PW24006-59": "78 Lewiki Rd, Canonsburg PA 15317", "Verizon Southe Pointe Relo-PW24008-12": "78 Lewicki Road, Canonsburg PA 15317", "Verizon Squaw Valley-PW24008-34": "1917 Sr 478, Emlenton PA 16373", "Verizon Squirrel Hill 5-PW24008- 5": "40.440000,- 79919700, Pittsbugh PA 15217", "Verizon Strip District HD Upgrade-PW24006-41": "1627 Penn Avenue, Pittsburgh PA 15222", "Verizon Swisshelm 5-PW24008- 3": "40.422200, 79.898400, Pittsbugh PA 15218", "Verizon Swissvale 1-PW24008-48": "40.4200, -79.897400, Pittsburgh PA 15218", "Verizon Tower Bolindale East Matrix-PW24006- 8": "1029 Holtz St, Niles OH 44446", "Verizon Tower Burketsville Matrix-PW24006- 1": "2640 Sumantown Road, Middletown MD 21769", "Verizon Tower Clarksburg, PA Matrix-PW24006- 5": "188 Darlene Dr, Clarksburg PA 15725", "Verizon Tower Devils Elbow Matrix-PW24006- 6": "3588 Caledonia Pike, Frenchville PA 16836", "Verizon Tower Hopwood Matrix-PW24006- 4": "117 Pine Knob Rd, Hopwood PA 15445", "Verizon Tower Matrix 2024 Place Holder-PW24006- X": "Various, VARIOUS PA 15222", "Verizon Tower Matrix 2025 Place Holder-PW25028- X": "Various, VARIOUS PA 15222", "Verizon Tower Matrix 2026 Place Holder-PW26003- X": "Various, VARIOUS PA 15222", "Verizon Tower Northland Bowling Matrix-PW24006-10": "1251 Martin St, STATE COLLEGE PA 16501", "Verizon Tower Portage Matrix-PW24006- 2": "675 Munster Rd, Portage PA 15946", "Verizon Tower Tridelphia Matrix-PW24006- 3": "744 Gantzer Rd, Tridelphia WV 26059", "Verizon Tower Valley Grove Matrix-PW24006- 7": "132 Jesse Ln Valley, Valley Grove WV 26060", "Verizon Truman Road-PW24008- 1": "266 Redds Mill Rd, Charleroi PA 15022", "Verizon Uniontown NE-PW24008-18": "878 N Gallatin Ave, Uniontown PA 15401", "Verizon Walker Building Cab-PW24008-36": "210 N Burrowes St, State College PA 16801", "Verizon Warren-PW24008-23": "109 Chapman Rd, Warren PA 16365", "Verizon Washington SC8-PW24064- 3": "40.183310, - 80.202900, Washington PA 15301", "Verizon Wauseon DT-PW24008-21": "565 Dickman Rd, Wauseon OH 43567", "Verizon West Branch-PW24006-46": "56 Larson Dr, Kylertown PA 16847", "Verizon West Winfield-PW24006-22": "100 Russell Rd, Fenelton PA 16034", "Verizon Whitford Park-PW24006-53": "42.1559, -79.9878, Erie PA 16511", "Verizon Wilkinsburg 12-PW24008-46": "40.4409, -79.8817, Pittsburgh PA 15221", "VT6472 RCC Derby-PW25085- 3": "594 Hinman Settler Road, Newport VT 5855", "VTL01085 Vershire Vermont 113-PW25085- 6": "6410 Vermont 113, Vershire VT 5079", "VTL06438 RCC Norwich-PW25085- 2": "220 Upper Parade Ground, Northfield VT 5663", "Waldorf Towers-PW24071-12": "103 Mcknight Cir, Pittsburgh PA 15237", "Waldorf Towers Reroof-PW26002- 7": "103 Mcknight Cir Bldg B, Pittsburgh PA 15237", "WALKERS MILL-RVT-633888": "1000 Nevillewood Drive, Presto PA", "Walkers Mill Ladders-PW24071- 7": "1000 Nevillewood Dive, Presto PA 15142", "Warren Hosp SC 1-PW25027-51": "41.42744, -79.155172, Warren PA 16365", "WARREN HOSPITAL SC 1 - A-RVT-633821": "103 W. St. Clair St, Warren PA", "Warren SC-PW26002- 2": "41.861051, -79.14283, Warren PA 16365", "Washington DT C-Band Upgrade-PW26003- 7": "6 S Main St, Washington PA 15301", "WAUPELANI DR - A-RVT-633889": "425 Waupelani Dr, State College PA", "Waupelani Drive Generator-PW26002- 9": "425 Waupelani Dr, State College PA 16801", "Wayneburg DT Upgrade-PW25028-34": "51 W College Street, Waynesburg PA 15370", "Waynesburg-PW25028- 7": "106 Dutch Run Rd, Waynesburg PA 15370", "WAYNESBURG DT-RVT-633845": "51 W College Ave., Waynesburg PA", "Webster Springs WV-PW26001-12": "5275 Webster Rd, Upperglade WV 26525", "Weirton Rooftop Upgrade-PW24006-45": "3720 Main Street, Weirton WV 26062", "West 32nd Street Upgrade-PW25028-49": "1330 W 26th St, Erie PA 16508", "West Deer-PW25027- 4": "3819 Cedar Ridge Rd, Allison Park PA 15101", "West Hills-PW25028-41": "39.2788, -80.0375, Grafton WV 26354", "West Mifflin SC 1-PW24064-10": "40.367695, -79857910, Duquesne PA 15110", "West Milford-PW25026-21": "1513 Oakmound Dr, Clarksburg WV 25019", "WEST MILFORD-PW25026-21": "1513 Oakmound Dr, Clarksburg WV 25019", "Weston-PW25028-39": "39.0423, -80.3945, Weston WV 26452", "Westshore Michigan-PW25026-22": "2915 W Groth Rd, Ludington MI 49431", "Westwood-PW24071-13": "40.440672, -80.053397, Pittsburgh PA 15205", "Wexford Flats Upgrade-PW24006-57": "10431 Perry Hwy, Wexford PA 15090", "William Penn SC 1-PW24064-19": "40.225880, -79.898681, Monogahela PA 15063", "Windstream Emergency Work-PW26054- 1": "2783 England Drive, Murrysville PA 15668", "WIRELESS EQUIPMENT CHARGES-PW26901-": "2740 Smallman Street, PITTSBURGH PA 15222", "WIRELESS EQUIPMENT JOB-PW24901-": "Various, PITTSBURGH PA 15222", "Wood Street C-Band Upgrade-PW25028-56": "204 5th Ave, Pittsburgh PA 15222", "Worthington PA-PW25026-28": "40.8310, -79.6042, Windber PA 15963", "WVU UNIVERSITY AVE SC 2 - A-RVT-633825": "270 Grant Avenue, Morgantown WV", "Zelienople South-PW24071-15": "119 Lutz Rd, Zelienople PA 16063", "Zitko Terrace-PW25028-20": "671 6th St, Glendale WV 26038"};
-
-function defaultData(){
-  const jobBoardNames = ["TMO/Betacom","Mod Project","New Builds","Power Towers","Gray"];
-  const jobBoards = {};
-  jobBoardNames.forEach(n=>{
-    jobBoards[n] = Array.from({length:6}, ()=>({jobName:'', crew:['','','','','']}));
-  });
-  return {
-    weekOf: new Date().toISOString().slice(0,10),
-    masterCrew: DEFAULT_MASTER.slice(),
-    masterJobs: DEFAULT_JOBS.slice(),
-    jobAddresses: Object.assign({}, DEFAULT_JOB_ADDRESSES),
-    jobsUpdated: '',
-    crews: {
-      "Tower": ["Billy B","Adam B","Danny D","Nick G","Colin K","Groundhog","Mac N Cheese","Riley S","Bill S","Kev Dog","Kookie","Jordan R","Monte M","Matt H","Thone S","Mike B","Aiden H","Jeff Sayer","Will M","Aaran Tripp","Isaac","Ed","Douglas","Joel"],
-      "Electricians": ["Philbert","Andy C","Paul D","Adam K","Ed S","Nate S","Ronalt","Scotty V","Gary M","Ricky K","Paul K"],
-      "Civil": ["Jim D","Jack J","Nugget","Mike P","Kukets","Craig D","Jeff Shriver","Luke","Derek C"]
-    },
-    jobBoards,
-    foremen: [
-      {name:"Jack", schedule:{MON:'',TUES:'',WED:'',THUR:''}},
-      {name:"Mike P", schedule:{MON:'',TUES:'',WED:'',THUR:''}}
-    ],
-    pto: [],
-    notes: ''
-  };
-}
-
-let data = null;
-let isManager = false;
-let activeTab = 'boards';
-let saveTimer = null;
-let pollTimer = null;
-let pinError = '';
-let showPinModal = false;
+const MSAL_SDK_URL = 'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js';
+const GRAPH_SCOPES = ['Files.ReadWrite', 'User.Read'];
 
 const BOARD_COLOR = {
   "Tower":"var(--blue)", "Electricians":"var(--blue)", "Civil":"var(--blue)",
   "TMO/Betacom":"var(--blue)", "Mod Project":"var(--blue)", "New Builds":"var(--blue)",
-  "Power Towers":"var(--blue)", "Gray":"var(--blue)"
+  "Power Towers":"var(--blue)", "Gary":"var(--blue)"
 };
 const ICON = {"Tower":"🗼","Electricians":"⚡","Civil":"⛑️"};
 
-async function loadData(){
+const JOB_DAY_OPTIONS = [
+  { label: 'Mon – Thurs', days: ['MON','TUES','WED','THUR'] },
+  { label: 'Mon – Wed',   days: ['MON','TUES','WED'] },
+  { label: 'Mon – Tues',  days: ['MON','TUES'] },
+  { label: 'Mon only',    days: ['MON'] },
+  { label: 'Tues – Thurs',days: ['TUES','WED','THUR'] },
+  { label: 'Tues – Wed',  days: ['TUES','WED'] },
+  { label: 'Tues only',   days: ['TUES'] },
+  { label: 'Wed – Thurs', days: ['WED','THUR'] },
+  { label: 'Wed only',    days: ['WED'] },
+  { label: 'Thurs only',  days: ['THUR'] }
+];
+
+function daysLabel(days){
+  const d = (days && days.length) ? days : ['MON','TUES','WED','THUR'];
+  const match = JOB_DAY_OPTIONS.find(o => o.days.length === d.length && o.days.every((x,i)=>x===d[i]));
+  return match ? match.label : d.join(', ');
+}
+
+let globalData = null;   // crews, master lists, MS Graph settings — shared across all weeks
+let weekData = null;     // jobBoards, foremen, pto, notes — specific to the selected week
+let currentWeekKey = mondayKey(new Date().toISOString().slice(0,10));
+let knownWeeks = [];
+
+let isManager = false;
+let activeTab = 'boards';
+let saveGlobalTimer = null;
+let saveWeekTimer = null;
+let pollTimer = null;
+let pinError = '';
+let showPinModal = false;
+let showWeekPicker = false;
+
+let msalInstance = null;
+let msalAccount = null;
+let lastBackupInfo = '';
+
+function mondayKey(dateStr){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(Date.UTC(y,m-1,d));
+  const dow = dt.getUTCDay(); // 0=Sun..6=Sat
+  const diff = (dow === 0) ? -6 : (1 - dow);
+  dt.setUTCDate(dt.getUTCDate() + diff);
+  return dt.toISOString().slice(0,10);
+}
+
+function shiftDateStr(dateStr, days){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(Date.UTC(y,m-1,d));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return dt.toISOString().slice(0,10);
+}
+
+async function loadGlobal(){
   try{
-    const res = await fetch('/api/schedule');
-    data = await res.json();
-  } catch(e){
-    data = defaultData();
+    const res = await fetch('/api/global');
+    globalData = await res.json();
+  }catch(e){
+    globalData = { masterCrew:[], masterJobs:[], jobAddresses:{}, jobsUpdated:'', crews:{Tower:[],Electricians:[],Civil:[]}, msalClientId:'', msalTenant:'common', oneDriveFolder:'WeeklySchedules' };
   }
-  if(!data.masterJobs || !Array.isArray(data.masterJobs)){
-    data.masterJobs = DEFAULT_JOBS.slice();
+}
+
+function scheduleSaveGlobal(){
+  clearTimeout(saveGlobalTimer);
+  saveGlobalTimer = setTimeout(async ()=>{
+    try{
+      await fetch('/api/global', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(globalData) });
+      flashSaved();
+    }catch(e){ console.error('global save failed', e); }
+  }, 400);
+}
+
+async function loadWeek(weekKeyInput){
+  currentWeekKey = mondayKey(weekKeyInput);
+  try{
+    const res = await fetch('/api/week/' + currentWeekKey);
+    weekData = await res.json();
+  }catch(e){
+    weekData = { weekOf: currentWeekKey, jobBoards:{}, foremen:[], pto:[], notes:'' };
   }
-  if(!data.jobAddresses || typeof data.jobAddresses !== 'object'){
-    data.jobAddresses = Object.assign({}, DEFAULT_JOB_ADDRESSES);
-  }
+  refreshKnownWeeks();
   render();
 }
 
-function scheduleSave(){
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(async ()=>{
+function scheduleSaveWeek(){
+  clearTimeout(saveWeekTimer);
+  saveWeekTimer = setTimeout(async ()=>{
     try{
-      await fetch('/api/schedule', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(data)
-      });
+      await fetch('/api/week/' + currentWeekKey, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(weekData) });
       flashSaved();
-    }catch(e){ console.error('save failed', e); }
+    }catch(e){ console.error('week save failed', e); }
   }, 400);
+}
+
+async function refreshKnownWeeks(){
+  try{
+    const res = await fetch('/api/weeks');
+    const j = await res.json();
+    knownWeeks = j.weeks || [];
+  }catch(e){ /* ignore */ }
 }
 
 function flashSaved(){
@@ -202,12 +244,16 @@ function anyInputFocused(){
 async function pollRefresh(){
   if(anyInputFocused()) return;
   try{
-    const res = await fetch('/api/schedule');
-    const incoming = await res.json();
-    if(JSON.stringify(incoming) !== JSON.stringify(data)){
-      data = incoming;
-      render();
-    }
+    const [gRes, wRes] = await Promise.all([
+      fetch('/api/global'),
+      fetch('/api/week/' + currentWeekKey)
+    ]);
+    const g = await gRes.json();
+    const w = await wRes.json();
+    let changed = false;
+    if(JSON.stringify(g) !== JSON.stringify(globalData)){ globalData = g; changed = true; }
+    if(JSON.stringify(w) !== JSON.stringify(weekData)){ weekData = w; changed = true; }
+    if(changed) render();
   }catch(e){}
 }
 
@@ -216,8 +262,8 @@ function esc(s){
 }
 
 function datalistHtml(){
-  return `<datalist id="crewNames">${data.masterCrew.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
-  <datalist id="jobNames">${data.masterJobs.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>`;
+  return `<datalist id="crewNames">${globalData.masterCrew.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+  <datalist id="jobNames">${globalData.masterJobs.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>`;
 }
 
 function render(){
@@ -233,7 +279,7 @@ function render(){
 }
 
 function headerHtml(){
-  const wk = data.weekOf;
+  const wk = weekData.weekOf;
   return `
   <div class="topbar">
     <div class="brand">
@@ -241,11 +287,11 @@ function headerHtml(){
       <span class="tag">Field Operations</span>
     </div>
     <div class="weekof">
-      Week of
-      ${isManager
-        ? `<input type="date" id="weekOfInput" value="${esc(wk)}"> <strong style="color:#fff">(${formatWeekRange(wk)})</strong>`
-        : `<strong style="color:#fff">${formatWeekRange(wk)}</strong>`
-      }
+      <button class="pill small" id="prevWeekBtn" title="Previous week">◀</button>
+      ${isManager ? `<input type="date" id="weekOfInput" value="${esc(wk)}">` : ``}
+      <strong style="color:#fff">${formatWeekRange(wk)}</strong>
+      <button class="pill small" id="nextWeekBtn" title="Next week">▶</button>
+      ${isManager ? `<button class="pill small" id="weekPickerBtn" title="Jump to a week">🗓</button>` : ``}
     </div>
     <div class="mode-btn">
       ${isManager
@@ -253,6 +299,17 @@ function headerHtml(){
         : `<button class="pill" id="unlockBtn">🔒 Manager Mode</button>`
       }
     </div>
+  </div>
+  ${showWeekPicker ? weekPickerHtml() : ''}`;
+}
+
+function weekPickerHtml(){
+  const items = knownWeeks.length ? knownWeeks.map(wk => `
+    <button class="pill small" data-jump-week="${esc(wk)}" style="margin:3px">${formatWeekRange(wk)}</button>
+  `).join('') : `<span class="empty-hint">No other weeks saved yet</span>`;
+  return `<div style="background:#242E3B;padding:12px 22px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+    <span style="color:#9CA6B4;font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-right:8px;">Jump to week:</span>
+    ${items}
   </div>`;
 }
 
@@ -266,7 +323,7 @@ function formatWeekRange(iso){
   if(!iso) return '';
   const [y,m,d] = iso.split('-').map(Number);
   const anchor = new Date(y, m-1, d);
-  const dow = anchor.getDay(); // 0=Sun..6=Sat
+  const dow = anchor.getDay();
   const diffToMonday = (dow === 0) ? -6 : (1 - dow);
   const monday = new Date(anchor);
   monday.setDate(anchor.getDate() + diffToMonday);
@@ -277,7 +334,7 @@ function formatWeekRange(iso){
 }
 
 function tabsHtml(){
-  const tabs = [['boards','Job Boards'],['foremen','Daily Action'],['pto','PTO & Notes'],['crews','Crews']];
+  const tabs = [['boards','Job Boards'],['foremen','Daily Action'],['pto','PTO & Notes'],['crews','Crews'],['backup','Backup']];
   return `<div class="tabs">${tabs.map(([id,label])=>
     `<div class="tab ${activeTab===id?'active':''}" data-tab="${id}">${label}</div>`
   ).join('')}</div>`;
@@ -288,13 +345,14 @@ function tabContentHtml(){
   if(activeTab === 'boards') return boardsTabHtml();
   if(activeTab === 'foremen') return foremenTabHtml();
   if(activeTab === 'pto') return ptoTabHtml();
+  if(activeTab === 'backup') return backupTabHtml();
   return '';
 }
 
 function crewsTabHtml(){
   return `<div class="board-row">
-    ${Object.keys(data.crews).map(crewName=>{
-      const members = data.crews[crewName];
+    ${Object.keys(globalData.crews).map(crewName=>{
+      const members = globalData.crews[crewName];
       return `<div class="card">
         <div class="card-head" style="background:${BOARD_COLOR[crewName]}">${ICON[crewName]||''} ${esc(crewName)}</div>
         <div class="card-body">
@@ -319,15 +377,15 @@ function boardsTabHtml(){
   return `
     ${isManager?`
     <div class="top-add" style="justify-content:space-between;align-items:center;">
-      <span class="empty-hint" style="padding:0">${data.masterJobs.length} jobs in the job list${data.jobsUpdated ? ' • updated ' + esc(data.jobsUpdated) : ''}</span>
+      <span class="empty-hint" style="padding:0">${globalData.masterJobs.length} jobs in the job list${globalData.jobsUpdated ? ' • updated ' + esc(globalData.jobsUpdated) : ''}</span>
       <span>
         <button id="importJobsBtn">📋 Import Job List (CSV)</button>
         <input type="file" id="importJobsFile" accept=".csv" style="display:none">
       </span>
     </div>`:''}
     <div class="board-row">
-    ${Object.keys(data.jobBoards).map(boardName=>{
-      const jobs = data.jobBoards[boardName];
+    ${Object.keys(weekData.jobBoards).map(boardName=>{
+      const jobs = weekData.jobBoards[boardName];
       return `<div class="card">
         <div class="card-head" style="background:${BOARD_COLOR[boardName]}">${esc(boardName)}</div>
         <div class="card-body">
@@ -343,14 +401,29 @@ function boardsTabHtml(){
                 }
               </div>
               <div class="job-slot-body">
+                <div class="job-days">
+                  ${isManager
+                    ? `<select data-action="jobDays" data-board="${esc(boardName)}" data-idx="${ji}">
+                        ${JOB_DAY_OPTIONS.map(opt=>{
+                          const val = opt.days.join(',');
+                          const current = (job.days && job.days.length ? job.days : ['MON','TUES','WED','THUR']).join(',');
+                          return `<option value="${val}" ${current===val?'selected':''}>${opt.label}</option>`;
+                        }).join('')}
+                       </select>`
+                    : (hasJob ? `<span class="job-days-badge">${daysLabel(job.days)}</span>` : '')
+                  }
+                </div>
                 ${job.crew.map((c,ci)=>{
                   if(!isManager && !(c && c.trim().length)) return '';
                   return `<div class="crew-line">
                     <input list="crewNames" ${isManager?'':'disabled'} placeholder="Crew member ${ci+1}" value="${esc(c)}" data-action="jobCrew" data-board="${esc(boardName)}" data-idx="${ji}" data-ci="${ci}">
                   </div>`;
                 }).join('')}
-                ${(hasJob && data.jobAddresses[job.jobName]) ? `<div class="job-address"><span class="pin">📍</span><span>${esc(data.jobAddresses[job.jobName])}</span></div>` : ''}
-                ${(!isManager && !hasJob && !anyCrew) ? '' : ''}
+                ${(hasJob && globalData.jobAddresses[job.jobName]) ? `<div class="job-address"><span class="pin">📍</span><span>${esc(globalData.jobAddresses[job.jobName])}</span></div>` : ''}
+                ${isManager
+                  ? `<textarea class="job-notes-input" placeholder="Notes…" data-action="jobNotes" data-board="${esc(boardName)}" data-idx="${ji}">${esc(job.notes||'')}</textarea>`
+                  : ((job.notes && job.notes.trim().length) ? `<div class="job-notes">📝 ${esc(job.notes)}</div>` : '')
+                }
               </div>
             </div>`;
           }).join('') || '<div class="empty-hint">No jobs posted this week</div>'}
@@ -365,7 +438,7 @@ function foremenTabHtml(){
   return `
     ${isManager?`<div class="top-add"><button data-action="addForeman">+ Add foreman schedule</button></div>`:''}
     <div class="board-row">
-    ${data.foremen.map((f,fi)=>`
+    ${weekData.foremen.map((f,fi)=>`
       <div class="card">
         <div class="card-head" style="background:var(--green)">
           <span>${esc(f.name)}</span>
@@ -384,7 +457,7 @@ function foremenTabHtml(){
 }
 
 function ptoTabHtml(){
-  const sorted = data.pto.map((p,i)=>({...p,_i:i})).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const sorted = weekData.pto.map((p,i)=>({...p,_i:i})).sort((a,b)=>(a.startDate||'').localeCompare(b.startDate||''));
   return `<div class="board-row">
     <div class="card">
       <div class="card-head" style="background:var(--purple)">PTO</div>
@@ -392,7 +465,13 @@ function ptoTabHtml(){
         ${sorted.length ? sorted.map(p=>`
           <div class="pto-row">
             <input list="crewNames" ${isManager?'':'disabled'} placeholder="Crew member" value="${esc(p.name)}" data-action="ptoName" data-idx="${p._i}">
-            <input type="date" ${isManager?'':'disabled'} value="${esc(p.date)}" data-action="ptoDate" data-idx="${p._i}">
+            <span style="display:flex;gap:4px;">
+              ${isManager
+                ? `<input type="date" value="${esc(p.startDate)}" data-action="ptoStartDate" data-idx="${p._i}">
+                   <input type="date" value="${esc(p.endDate)}" data-action="ptoEndDate" data-idx="${p._i}">`
+                : `<span class="pto-range">${formatPtoRange(p.startDate, p.endDate)}</span>`
+              }
+            </span>
             ${isManager?`<button class="rm-btn" data-action="rmPto" data-idx="${p._i}">✕</button>`:'<span></span>'}
           </div>`).join('') : '<div class="empty-hint">No PTO logged this week</div>'
         }
@@ -402,7 +481,52 @@ function ptoTabHtml(){
     <div class="card">
       <div class="card-head" style="background:var(--orange)">Notes</div>
       <div class="card-body">
-        <textarea class="notes" ${isManager?'':'disabled'} placeholder="Notes for the crew…" data-action="notes">${esc(data.notes)}</textarea>
+        <textarea class="notes" ${isManager?'':'disabled'} placeholder="Notes for the crew…" data-action="notes">${esc(weekData.notes)}</textarea>
+      </div>
+    </div>
+  </div>`;
+}
+
+function formatPtoRange(startDate, endDate){
+  if(!startDate && !endDate) return '';
+  if(!endDate || startDate === endDate) return formatDate(startDate);
+  return `${formatDate(startDate)} – ${formatDate(endDate)}`;
+}
+
+function backupTabHtml(){
+  if(!isManager){
+    return `<div class="card"><div class="card-body"><div class="empty-hint">OneDrive backup is managed by your scheduler.</div></div></div>`;
+  }
+  return `
+  <div class="board-row">
+    <div class="card">
+      <div class="card-head" style="background:${'var(--charcoal)'}">Microsoft Sign-in Setup</div>
+      <div class="card-body">
+        <p class="setup-note">One-time setup, done once for the whole team: register a free Azure app at
+        <a href="https://portal.azure.com" target="_blank" rel="noopener">portal.azure.com</a> → Microsoft Entra ID → App registrations → New registration.
+        Set the redirect URI (Single-page application / SPA) to this site's exact URL: <code>${esc(window.location.origin + window.location.pathname)}</code>.
+        Then paste the "Application (client) ID" below. Ask your assistant for step-by-step help if needed.</p>
+        <div class="add-row"><input id="msalClientIdInput" placeholder="Azure Application (client) ID" value="${esc(globalData.msalClientId||'')}"></div>
+        <div class="add-row"><input id="oneDriveFolderInput" placeholder="OneDrive folder name (e.g. WeeklySchedules)" value="${esc(globalData.oneDriveFolder||'WeeklySchedules')}"></div>
+        <div class="top-add" style="justify-content:flex-start;margin-top:8px"><button id="saveMsalSettingsBtn">Save Settings</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head" style="background:var(--blue)">Backup This Week</div>
+      <div class="card-body">
+        ${msalAccount ? `
+          <div class="empty-hint" style="font-style:normal">Signed in as ${esc(msalAccount.username || msalAccount.name || 'your Microsoft account')}</div>
+          <div class="top-add" style="justify-content:flex-start;margin-top:10px;gap:8px">
+            <button id="backupNowBtn">☁️ Backup this week to OneDrive</button>
+            <button id="disconnectMsBtn">Sign out</button>
+          </div>
+        ` : `
+          <div class="empty-hint">Not connected yet.</div>
+          <div class="top-add" style="justify-content:flex-start;margin-top:10px">
+            <button id="connectMsBtn">Connect Microsoft Account</button>
+          </div>
+        `}
+        ${lastBackupInfo ? `<div class="empty-hint" style="margin-top:10px">${esc(lastBackupInfo)}</div>` : ''}
       </div>
     </div>
   </div>`;
@@ -429,7 +553,7 @@ function attachEvents(){
   if(unlockBtn) unlockBtn.onclick = ()=>{ showPinModal = true; pinError=''; render(); setTimeout(()=>document.getElementById('pinInput')?.focus(),50); };
 
   const lockBtn = document.getElementById('lockBtn');
-  if(lockBtn) lockBtn.onclick = ()=>{ isManager = false; render(); };
+  if(lockBtn) lockBtn.onclick = ()=>{ isManager = false; showWeekPicker = false; render(); };
 
   const modalBg = document.getElementById('modalBg');
   if(modalBg){
@@ -438,8 +562,17 @@ function attachEvents(){
     document.getElementById('pinInput').onkeydown = (e)=>{ if(e.key==='Enter') tryPin(); };
   }
 
+  const prevWeekBtn = document.getElementById('prevWeekBtn');
+  if(prevWeekBtn) prevWeekBtn.onclick = ()=> loadWeek(shiftDateStr(currentWeekKey, -7));
+  const nextWeekBtn = document.getElementById('nextWeekBtn');
+  if(nextWeekBtn) nextWeekBtn.onclick = ()=> loadWeek(shiftDateStr(currentWeekKey, 7));
   const weekOfInput = document.getElementById('weekOfInput');
-  if(weekOfInput) weekOfInput.onchange = (e)=>{ data.weekOf = e.target.value; scheduleSave(); };
+  if(weekOfInput) weekOfInput.onchange = (e)=> loadWeek(e.target.value);
+  const weekPickerBtn = document.getElementById('weekPickerBtn');
+  if(weekPickerBtn) weekPickerBtn.onclick = ()=>{ showWeekPicker = !showWeekPicker; render(); };
+  document.querySelectorAll('[data-jump-week]').forEach(btn=>{
+    btn.onclick = ()=>{ showWeekPicker = false; loadWeek(btn.dataset.jumpWeek); };
+  });
 
   document.querySelectorAll('[data-action="addCrewMember"]').forEach(btn=>{
     btn.onclick = ()=>{
@@ -447,65 +580,78 @@ function attachEvents(){
       const input = document.querySelector(`[data-add-crew="${cssEsc(crew)}"]`);
       const val = input.value.trim();
       if(!val) return;
-      data.crews[crew].push(val);
-      if(!data.masterCrew.includes(val)) data.masterCrew.push(val);
-      scheduleSave(); render();
+      globalData.crews[crew].push(val);
+      if(!globalData.masterCrew.includes(val)) globalData.masterCrew.push(val);
+      scheduleSaveGlobal(); render();
     };
   });
   document.querySelectorAll('[data-action="rmCrewMember"]').forEach(btn=>{
     btn.onclick = ()=>{
-      data.crews[btn.dataset.crew].splice(+btn.dataset.idx,1);
-      scheduleSave(); render();
+      globalData.crews[btn.dataset.crew].splice(+btn.dataset.idx,1);
+      scheduleSaveGlobal(); render();
     };
   });
 
   document.querySelectorAll('[data-action="jobName"]').forEach(inp=>{
-    inp.oninput = ()=>{ data.jobBoards[inp.dataset.board][+inp.dataset.idx].jobName = inp.value; scheduleSave(); };
+    inp.oninput = ()=>{ weekData.jobBoards[inp.dataset.board][+inp.dataset.idx].jobName = inp.value; scheduleSaveWeek(); };
   });
   document.querySelectorAll('[data-action="jobCrew"]').forEach(inp=>{
     inp.oninput = ()=>{
-      data.jobBoards[inp.dataset.board][+inp.dataset.idx].crew[+inp.dataset.ci] = inp.value;
-      scheduleSave();
+      weekData.jobBoards[inp.dataset.board][+inp.dataset.idx].crew[+inp.dataset.ci] = inp.value;
+      scheduleSaveWeek();
     };
     inp.onchange = ()=>{
       const val = inp.value.trim();
-      if(val && !data.masterCrew.includes(val)) { data.masterCrew.push(val); scheduleSave(); }
+      if(val && !globalData.masterCrew.includes(val)) { globalData.masterCrew.push(val); scheduleSaveGlobal(); }
+    };
+  });
+  document.querySelectorAll('[data-action="jobNotes"]').forEach(ta=>{
+    ta.oninput = ()=>{ weekData.jobBoards[ta.dataset.board][+ta.dataset.idx].notes = ta.value; scheduleSaveWeek(); };
+  });
+  document.querySelectorAll('[data-action="jobDays"]').forEach(sel=>{
+    sel.onchange = ()=>{
+      weekData.jobBoards[sel.dataset.board][+sel.dataset.idx].days = sel.value.split(',');
+      scheduleSaveWeek();
     };
   });
 
   const addForemanBtn = document.querySelector('[data-action="addForeman"]');
   if(addForemanBtn) addForemanBtn.onclick = ()=>{
-    data.foremen.push({name:'New Foreman', schedule:{MON:'',TUES:'',WED:'',THUR:''}});
-    scheduleSave(); render();
+    weekData.foremen.push({name:'New Foreman', schedule:{MON:'',TUES:'',WED:'',THUR:''}});
+    scheduleSaveWeek(); render();
   };
   document.querySelectorAll('[data-action="rmForeman"]').forEach(btn=>{
-    btn.onclick = ()=>{ data.foremen.splice(+btn.dataset.idx,1); scheduleSave(); render(); };
+    btn.onclick = ()=>{ weekData.foremen.splice(+btn.dataset.idx,1); scheduleSaveWeek(); render(); };
   });
   document.querySelectorAll('[data-action="foremanName"]').forEach(inp=>{
-    inp.oninput = ()=>{ data.foremen[+inp.dataset.idx].name = inp.value; scheduleSave(); };
+    inp.oninput = ()=>{ weekData.foremen[+inp.dataset.idx].name = inp.value; scheduleSaveWeek(); };
     inp.onblur = ()=>render();
   });
   document.querySelectorAll('[data-action="foremanDay"]').forEach(inp=>{
-    inp.oninput = ()=>{ data.foremen[+inp.dataset.idx].schedule[inp.dataset.day] = inp.value; scheduleSave(); };
+    inp.oninput = ()=>{ weekData.foremen[+inp.dataset.idx].schedule[inp.dataset.day] = inp.value; scheduleSaveWeek(); };
   });
 
   const addPtoBtn = document.querySelector('[data-action="addPto"]');
   if(addPtoBtn) addPtoBtn.onclick = ()=>{
-    data.pto.push({name:'', date:new Date().toISOString().slice(0,10)});
-    scheduleSave(); render();
+    const today = new Date().toISOString().slice(0,10);
+    weekData.pto.push({name:'', startDate: today, endDate: today});
+    scheduleSaveWeek(); render();
   };
   document.querySelectorAll('[data-action="rmPto"]').forEach(btn=>{
-    btn.onclick = ()=>{ data.pto.splice(+btn.dataset.idx,1); scheduleSave(); render(); };
+    btn.onclick = ()=>{ weekData.pto.splice(+btn.dataset.idx,1); scheduleSaveWeek(); render(); };
   });
   document.querySelectorAll('[data-action="ptoName"]').forEach(inp=>{
-    inp.oninput = ()=>{ data.pto[+inp.dataset.idx].name = inp.value; scheduleSave(); };
+    inp.oninput = ()=>{ weekData.pto[+inp.dataset.idx].name = inp.value; scheduleSaveWeek(); };
   });
-  document.querySelectorAll('[data-action="ptoDate"]').forEach(inp=>{
-    inp.onchange = ()=>{ data.pto[+inp.dataset.idx].date = inp.value; scheduleSave(); render(); };
+  document.querySelectorAll('[data-action="ptoStartDate"]').forEach(inp=>{
+    inp.onchange = ()=>{ weekData.pto[+inp.dataset.idx].startDate = inp.value; scheduleSaveWeek(); render(); };
+  });
+  document.querySelectorAll('[data-action="ptoEndDate"]').forEach(inp=>{
+    inp.onchange = ()=>{ weekData.pto[+inp.dataset.idx].endDate = inp.value; scheduleSaveWeek(); render(); };
   });
 
   const notesArea = document.querySelector('[data-action="notes"]');
-  if(notesArea) notesArea.oninput = ()=>{ data.notes = notesArea.value; scheduleSave(); };
+  if(notesArea) notesArea.oninput = ()=>{ weekData.notes = notesArea.value; scheduleSaveWeek(); };
 
   const importBtn = document.getElementById('importJobsBtn');
   const importFile = document.getElementById('importJobsFile');
@@ -516,6 +662,21 @@ function attachEvents(){
       importFile.value = '';
     };
   }
+
+  const saveMsalBtn = document.getElementById('saveMsalSettingsBtn');
+  if(saveMsalBtn) saveMsalBtn.onclick = ()=>{
+    globalData.msalClientId = document.getElementById('msalClientIdInput').value.trim();
+    globalData.oneDriveFolder = document.getElementById('oneDriveFolderInput').value.trim() || 'WeeklySchedules';
+    msalInstance = null; // force re-init with new client id
+    scheduleSaveGlobal();
+    alert('Settings saved.');
+  };
+  const connectMsBtn = document.getElementById('connectMsBtn');
+  if(connectMsBtn) connectMsBtn.onclick = connectMicrosoft;
+  const disconnectMsBtn = document.getElementById('disconnectMsBtn');
+  if(disconnectMsBtn) disconnectMsBtn.onclick = disconnectMicrosoft;
+  const backupNowBtn = document.getElementById('backupNowBtn');
+  if(backupNowBtn) backupNowBtn.onclick = backupWeekToOneDrive;
 }
 
 function cssEsc(s){ return s.replace(/(["\\])/g,'\\$1'); }
@@ -607,10 +768,10 @@ function handleJobsCSVFile(file){
         alert('No job rows found in that CSV. Expected a "Name" column (and optionally "Job Number"), or a single job-name column.');
         return;
       }
-      data.masterJobs = jobs;
-      data.jobAddresses = addresses;
-      data.jobsUpdated = new Date().toLocaleDateString();
-      scheduleSave();
+      globalData.masterJobs = jobs;
+      globalData.jobAddresses = addresses;
+      globalData.jobsUpdated = new Date().toLocaleDateString();
+      scheduleSaveGlobal();
       render();
     }catch(err){
       console.error(err);
@@ -634,7 +795,103 @@ function tryPin(){
   }
 }
 
-loadData();
+// --- Microsoft OneDrive backup (MSAL.js + Microsoft Graph) ---
+
+function loadMsalScript(){
+  return new Promise((resolve, reject)=>{
+    if(window.msal){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = MSAL_SDK_URL;
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error('Could not load the Microsoft sign-in library. Check your internet connection.'));
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureMsal(){
+  await loadMsalScript();
+  if(!globalData.msalClientId){
+    throw new Error('No Azure Application (client) ID set yet. Enter one under Backup → Microsoft Sign-in Setup.');
+  }
+  if(!msalInstance){
+    msalInstance = new window.msal.PublicClientApplication({
+      auth: {
+        clientId: globalData.msalClientId,
+        authority: `https://login.microsoftonline.com/${globalData.msalTenant || 'common'}`,
+        redirectUri: window.location.origin + window.location.pathname
+      },
+      cache: { cacheLocation: 'localStorage' }
+    });
+    if(typeof msalInstance.initialize === 'function'){
+      await msalInstance.initialize();
+    }
+    const accounts = msalInstance.getAllAccounts();
+    if(accounts.length) msalAccount = accounts[0];
+  }
+}
+
+async function connectMicrosoft(){
+  try{
+    await ensureMsal();
+    const result = await msalInstance.loginPopup({ scopes: GRAPH_SCOPES });
+    msalAccount = result.account;
+    render();
+  }catch(err){
+    console.error(err);
+    alert('Microsoft sign-in failed: ' + (err.message || err));
+  }
+}
+
+function disconnectMicrosoft(){
+  msalAccount = null;
+  lastBackupInfo = '';
+  render();
+}
+
+async function getGraphToken(){
+  await ensureMsal();
+  if(!msalAccount) throw new Error('Not signed in to Microsoft yet.');
+  try{
+    const result = await msalInstance.acquireTokenSilent({ scopes: GRAPH_SCOPES, account: msalAccount });
+    return result.accessToken;
+  }catch(e){
+    const result = await msalInstance.acquireTokenPopup({ scopes: GRAPH_SCOPES, account: msalAccount });
+    return result.accessToken;
+  }
+}
+
+async function backupWeekToOneDrive(){
+  try{
+    const token = await getGraphToken();
+    const folder = (globalData.oneDriveFolder || 'WeeklySchedules').replace(/^\/+|\/+$/g,'');
+    const filename = `Week-of-${weekData.weekOf}.json`;
+    const payload = JSON.stringify({ ...weekData, crews: globalData.crews }, null, 2);
+    const url = `https://graph.microsoft.com/v1.0/me/drive/root:/${encodeURIComponent(folder)}/${encodeURIComponent(filename)}:/content`;
+    const resp = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: payload
+    });
+    if(!resp.ok){
+      const errText = await resp.text();
+      throw new Error(`Graph API error ${resp.status}: ${errText}`);
+    }
+    lastBackupInfo = `Saved ${filename} to OneDrive/${folder} at ${new Date().toLocaleTimeString()}`;
+    render();
+  }catch(err){
+    console.error(err);
+    alert('Backup failed: ' + (err.message || err));
+  }
+}
+
+async function init(){
+  await loadGlobal();
+  await loadWeek(currentWeekKey);
+}
+init();
 pollTimer = setInterval(pollRefresh, 6000);
 </script>
 </body>

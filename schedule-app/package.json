@@ -1,7 +1,7 @@
 {
   "name": "weekly-schedule-app",
-  "version": "1.0.0",
-  "description": "Shared crew weekly scheduling board",
+  "version": "2.0.0",
+  "description": "Shared crew weekly scheduling board with multi-week planning and OneDrive backup",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
