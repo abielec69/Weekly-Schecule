@@ -120,7 +120,12 @@
 
 <script>
 const MANAGER_PIN = '2468';
-const MSAL_SDK_URL = 'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js';
+const MSAL_SDK_URLS = [
+  'https://alcdn.msauth.net/browser/2.35.0/js/msal-browser.min.js',
+  'https://alcdn.msftauth.net/browser/2.35.0/js/msal-browser.min.js',
+  'https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.35.0/lib/msal-browser.min.js',
+  'https://unpkg.com/@azure/msal-browser@2.35.0/lib/msal-browser.min.js'
+];
 const GRAPH_SCOPES = ['Files.ReadWrite', 'User.Read'];
 
 const BOARD_COLOR = {
@@ -800,13 +805,18 @@ function tryPin(){
 // --- Microsoft OneDrive backup (MSAL.js + Microsoft Graph) ---
 
 function loadMsalScript(){
-  return new Promise((resolve, reject)=>{
-    if(window.msal){ resolve(); return; }
-    const s = document.createElement('script');
-    s.src = MSAL_SDK_URL;
-    s.onload = ()=>resolve();
-    s.onerror = ()=>reject(new Error('Could not load the Microsoft sign-in library. Check your internet connection.'));
-    document.head.appendChild(s);
+  if(window.msal) return Promise.resolve();
+  return MSAL_SDK_URLS.reduce((chain, url) => {
+    return chain.catch(() => new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = url;
+      s.onload = () => resolve();
+      s.onerror = () => { s.remove(); reject(new Error('failed: ' + url)); };
+      document.head.appendChild(s);
+    }));
+  }, Promise.reject())
+  .catch(() => {
+    throw new Error('Could not load the Microsoft sign-in library from any source. Check your internet connection, or ask your IT team whether alcdn.msauth.net / cdn.jsdelivr.net / unpkg.com are blocked on this network.');
   });
 }
 
