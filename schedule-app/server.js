@@ -50,6 +50,7 @@ function mondayOf(dateStr) {
 }
 
 function listWeekKeys() {
+  if (!fs.existsSync(WEEKS_DIR)) return [];
   return fs.readdirSync(WEEKS_DIR)
     .filter(f => f.endsWith('.json'))
     .map(f => f.replace('.json', ''))
@@ -75,6 +76,7 @@ function readGlobal() {
 }
 
 function writeGlobal(g) {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(GLOBAL_FILE, JSON.stringify(g, null, 2));
 }
 
@@ -120,6 +122,7 @@ function readWeek(weekKey) {
 }
 
 function writeWeek(weekKey, week) {
+  if (!fs.existsSync(WEEKS_DIR)) fs.mkdirSync(WEEKS_DIR, { recursive: true });
   week.weekOf = weekKey;
   fs.writeFileSync(weekFilePath(weekKey), JSON.stringify(week, null, 2));
 }
@@ -184,6 +187,40 @@ app.post('/api/week/:weekKey', (req, res) => {
 // --- List of weeks that have data (for a "jump to week" picker) ---
 app.get('/api/weeks', (req, res) => {
   res.json({ weeks: listWeekKeys() });
+});
+
+// --- Full backup export/restore (local safety net, no Microsoft account needed) ---
+app.get('/api/backup', (req, res) => {
+  const global = readGlobal();
+  const weeks = {};
+  listWeekKeys().forEach(key => {
+    try {
+      weeks[key] = JSON.parse(fs.readFileSync(weekFilePath(key), 'utf8'));
+    } catch (e) { /* skip unreadable week file */ }
+  });
+  res.json({
+    exportedAt: new Date().toISOString(),
+    global,
+    weeks
+  });
+});
+
+app.post('/api/restore', (req, res) => {
+  try {
+    const { global, weeks } = req.body || {};
+    if (!global || !weeks) {
+      return res.status(400).json({ ok: false, error: 'Backup file is missing global or weeks data.' });
+    }
+    writeGlobal(global);
+    Object.keys(weeks).forEach(key => {
+      const normalizedKey = mondayOf(key);
+      writeWeek(normalizedKey, weeks[key]);
+    });
+    res.json({ ok: true, restoredWeeks: Object.keys(weeks).length });
+  } catch (e) {
+    console.error('Restore failed:', e);
+    res.status(500).json({ ok: false, error: 'Restore failed: ' + e.message });
+  }
 });
 
 app.listen(PORT, () => {
