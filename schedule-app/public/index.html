@@ -171,6 +171,7 @@ let showWeekPicker = false;
 let msalInstance = null;
 let msalAccount = null;
 let lastBackupInfo = '';
+let localBackupStatus = '';
 
 function mondayKey(dateStr){
   const [y,m,d] = dateStr.split('-').map(Number);
@@ -507,6 +508,18 @@ function backupTabHtml(){
   return `
   <div class="board-row">
     <div class="card">
+      <div class="card-head" style="background:var(--green)">Local Backup (recommended before any update)</div>
+      <div class="card-body">
+        <p class="setup-note">Downloads everything — crew rosters, the job list, and every week you've planned — as one file to your computer. Do this before redeploying/updating the app. No sign-in needed.</p>
+        <div class="top-add" style="justify-content:flex-start;gap:8px">
+          <button id="downloadBackupBtn">⬇️ Download Full Backup</button>
+          <button id="restoreBackupBtn">⬆️ Restore From Backup File</button>
+          <input type="file" id="restoreBackupFile" accept=".json" style="display:none">
+        </div>
+        ${localBackupStatus ? `<div class="empty-hint" style="margin-top:8px">${esc(localBackupStatus)}</div>` : ''}
+      </div>
+    </div>
+    <div class="card">
       <div class="card-head" style="background:${'var(--charcoal)'}">Microsoft Sign-in Setup</div>
       <div class="card-body">
         <p class="setup-note">One-time setup, done once for the whole team: register a free Azure app at
@@ -667,6 +680,18 @@ function attachEvents(){
     importFile.onchange = ()=>{
       if(importFile.files && importFile.files[0]) handleJobsCSVFile(importFile.files[0]);
       importFile.value = '';
+    };
+  }
+
+  const downloadBackupBtn = document.getElementById('downloadBackupBtn');
+  if(downloadBackupBtn) downloadBackupBtn.onclick = downloadFullBackup;
+  const restoreBackupBtn = document.getElementById('restoreBackupBtn');
+  const restoreBackupFile = document.getElementById('restoreBackupFile');
+  if(restoreBackupBtn && restoreBackupFile){
+    restoreBackupBtn.onclick = ()=> restoreBackupFile.click();
+    restoreBackupFile.onchange = ()=>{
+      if(restoreBackupFile.files && restoreBackupFile.files[0]) restoreFromBackupFile(restoreBackupFile.files[0]);
+      restoreBackupFile.value = '';
     };
   }
 
@@ -897,6 +922,64 @@ async function backupWeekToOneDrive(){
     console.error(err);
     alert('Backup failed: ' + (err.message || err));
   }
+}
+
+// --- Local full backup (download / restore a JSON file, no sign-in needed) ---
+
+async function downloadFullBackup(){
+  try{
+    const res = await fetch('/api/backup');
+    if(!res.ok) throw new Error('Server returned ' + res.status);
+    const backup = await res.json();
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `weekly-schedule-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    localBackupStatus = `Downloaded backup covering ${Object.keys(backup.weeks||{}).length} week(s) at ${new Date().toLocaleTimeString()}.`;
+    render();
+  }catch(err){
+    console.error(err);
+    alert('Could not download backup: ' + (err.message || err));
+  }
+}
+
+function restoreFromBackupFile(file){
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try{
+      const backup = JSON.parse(String(e.target.result));
+      if(!backup.global || !backup.weeks){
+        alert('That file doesn\'t look like a Weekly Schedule backup (missing global/weeks data).');
+        return;
+      }
+      const weekCount = Object.keys(backup.weeks).length;
+      if(!confirm(`This will overwrite the current crew rosters, job list, and ${weekCount} saved week(s) with the contents of this backup file. Continue?`)){
+        return;
+      }
+      const res = await fetch('/api/restore', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(backup)
+      });
+      const result = await res.json();
+      if(!res.ok || !result.ok){
+        throw new Error(result.error || ('Server returned ' + res.status));
+      }
+      localBackupStatus = `Restored ${result.restoredWeeks} week(s) from backup at ${new Date().toLocaleTimeString()}.`;
+      await loadGlobal();
+      await loadWeek(currentWeekKey);
+    }catch(err){
+      console.error(err);
+      alert('Restore failed: ' + (err.message || err));
+    }
+  };
+  reader.readAsText(file);
 }
 
 async function init(){
