@@ -14,6 +14,8 @@ if (!fs.existsSync(WEEKS_DIR)) fs.mkdirSync(WEEKS_DIR, { recursive: true });
 
 const DEFAULT_MASTER = ["Aaran Tripp","Adam B","Adam K","Aiden H","Andy C","Bill S","Billy B","Colin K","Craig D","Danny D","Derek C","Douglas","Ed","Ed S","Gary M","Groundhog","Isaac","Jack J","Jeff Sayer","Jeff Shriver","Jim D","Joel","Jordan R","Kev Dog","Kookie","Kukets","Luke","Mac N Cheese","Matt H","Mike B","Mike P","Monte M","Nate S","Nick G","Nugget","Paul D","Paul K","Philbert","Ricky K","Riley S","Ronalt","Scotty V","Thone S","Will M"];
 
+const JOB_BOARD_NAMES = ["TMO/Betacom", "Mod Project", "New Builds", "Power Towers", "Gary", "Nando", "Small Cell"];
+
 function defaultGlobal() {
   return {
     masterCrew: DEFAULT_MASTER.slice(),
@@ -32,12 +34,21 @@ function defaultGlobal() {
 }
 
 function defaultWeekJobBoards() {
-  const jobBoardNames = ["TMO/Betacom", "Mod Project", "New Builds", "Power Towers", "Gary"];
   const jobBoards = {};
-  jobBoardNames.forEach(n => {
+  JOB_BOARD_NAMES.forEach(n => {
     jobBoards[n] = Array.from({ length: 6 }, () => ({ jobName: '', crew: ['', '', '', '', ''], notes: '', days: ['MON','TUES','WED','THUR'] }));
   });
   return jobBoards;
+}
+
+function ensureAllBoardsPresent(week) {
+  if (!week.jobBoards) week.jobBoards = {};
+  JOB_BOARD_NAMES.forEach(n => {
+    if (!week.jobBoards[n]) {
+      week.jobBoards[n] = Array.from({ length: 6 }, () => ({ jobName: '', crew: ['', '', '', '', ''], notes: '', days: ['MON','TUES','WED','THUR'] }));
+    }
+  });
+  return week;
 }
 
 function mondayOf(dateStr) {
@@ -88,7 +99,10 @@ function readWeek(weekKey) {
   const fp = weekFilePath(weekKey);
   if (fs.existsSync(fp)) {
     try {
-      return JSON.parse(fs.readFileSync(fp, 'utf8'));
+      const week = JSON.parse(fs.readFileSync(fp, 'utf8'));
+      const patched = ensureAllBoardsPresent(week);
+      writeWeek(weekKey, patched); // persist any newly-added boards
+      return patched;
     } catch (e) {
       // fall through to create a fresh one
     }
