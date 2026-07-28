@@ -78,6 +78,8 @@
   .job-notes{font-size:12px;color:var(--ink-soft);padding-top:4px;margin-top:2px;white-space:pre-wrap;}
   .job-days select{width:100%;border:1px solid #E3E1DA;background:#FAFAF8;border-radius:6px;padding:5px 8px;font-size:12px;font-family:'Inter';}
   .job-days-badge{font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-soft);display:inline-block;padding:2px 8px;border-radius:999px;margin-top:2px;}
+  .safety-link{font-size:12px;font-weight:600;color:#8A4B00;background:#FBEBDD;display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:6px;margin-top:4px;text-decoration:none;}
+  .safety-link:hover{background:#F6DCC0;}
 
   .foreman-day{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #EEEDE8;font-size:14px;}
   .foreman-day:last-child{border-bottom:none;}
@@ -127,6 +129,7 @@ const MSAL_SDK_URLS = [
   'https://unpkg.com/@azure/msal-browser@2.35.0/lib/msal-browser.min.js'
 ];
 const GRAPH_SCOPES = ['Files.ReadWrite', 'User.Read'];
+const SAFETY_OBSERVATION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSey9X_YsHwhaQKUb1FYrEUeB4MjxPdaJCkdFvLEnoeLuAQUdQ/viewform';
 
 const BOARD_COLOR = {
   "Tower":"var(--blue)", "Electricians":"var(--blue)", "Civil":"var(--blue)",
@@ -436,6 +439,7 @@ function boardsTabHtml(){
                   ? `<textarea class="job-notes-input" placeholder="Notes…" data-action="jobNotes" data-board="${esc(boardName)}" data-idx="${ji}">${esc(job.notes||'')}</textarea>`
                   : ((job.notes && job.notes.trim().length) ? `<div class="job-notes">📝 ${esc(job.notes)}</div>` : '')
                 }
+                <a class="safety-link" href="${SAFETY_OBSERVATION_URL}" target="_blank" rel="noopener">🦺 Sargent Observation Safety</a>
               </div>
             </div>`;
           }).join('') || '<div class="empty-hint">No jobs posted this week</div>'}
