@@ -131,7 +131,7 @@ const GRAPH_SCOPES = ['Files.ReadWrite', 'User.Read'];
 const BOARD_COLOR = {
   "Tower":"var(--blue)", "Electricians":"var(--blue)", "Civil":"var(--blue)",
   "TMO/Betacom":"var(--blue)", "Mod Project":"var(--blue)", "New Builds":"var(--blue)",
-  "Power Towers":"var(--blue)", "Gary":"var(--blue)"
+  "Power Towers":"var(--blue)", "Gary":"var(--blue)", "Nando":"var(--blue)", "Small Cell":"var(--blue)"
 };
 const ICON = {"Tower":"🗼","Electricians":"⚡","Civil":"⛑️"};
 
@@ -395,7 +395,7 @@ function boardsTabHtml(){
     ${Object.keys(weekData.jobBoards).map(boardName=>{
       const jobs = weekData.jobBoards[boardName];
       return `<div class="card">
-        <div class="card-head" style="background:${BOARD_COLOR[boardName]}">${esc(boardName)}</div>
+        <div class="card-head" style="background:${BOARD_COLOR[boardName] || 'var(--blue)'}">${esc(boardName)}</div>
         <div class="card-body">
           ${jobs.map((job,ji)=>{
             const hasJob = job.jobName && job.jobName.trim().length;
@@ -827,6 +827,64 @@ function tryPin(){
   }
 }
 
+// --- Local full backup (download / restore a JSON file, no sign-in needed) ---
+
+async function downloadFullBackup(){
+  try{
+    const res = await fetch('/api/backup');
+    if(!res.ok) throw new Error('Server returned ' + res.status);
+    const backup = await res.json();
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `weekly-schedule-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    localBackupStatus = `Downloaded backup covering ${Object.keys(backup.weeks||{}).length} week(s) at ${new Date().toLocaleTimeString()}.`;
+    render();
+  }catch(err){
+    console.error(err);
+    alert('Could not download backup: ' + (err.message || err));
+  }
+}
+
+function restoreFromBackupFile(file){
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try{
+      const backup = JSON.parse(String(e.target.result));
+      if(!backup.global || !backup.weeks){
+        alert('That file doesn\'t look like a Weekly Schedule backup (missing global/weeks data).');
+        return;
+      }
+      const weekCount = Object.keys(backup.weeks).length;
+      if(!confirm(`This will overwrite the current crew rosters, job list, and ${weekCount} saved week(s) with the contents of this backup file. Continue?`)){
+        return;
+      }
+      const res = await fetch('/api/restore', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(backup)
+      });
+      const result = await res.json();
+      if(!res.ok || !result.ok){
+        throw new Error(result.error || ('Server returned ' + res.status));
+      }
+      localBackupStatus = `Restored ${result.restoredWeeks} week(s) from backup at ${new Date().toLocaleTimeString()}.`;
+      await loadGlobal();
+      await loadWeek(currentWeekKey);
+    }catch(err){
+      console.error(err);
+      alert('Restore failed: ' + (err.message || err));
+    }
+  };
+  reader.readAsText(file);
+}
+
 // --- Microsoft OneDrive backup (MSAL.js + Microsoft Graph) ---
 
 function loadMsalScript(){
@@ -922,64 +980,6 @@ async function backupWeekToOneDrive(){
     console.error(err);
     alert('Backup failed: ' + (err.message || err));
   }
-}
-
-// --- Local full backup (download / restore a JSON file, no sign-in needed) ---
-
-async function downloadFullBackup(){
-  try{
-    const res = await fetch('/api/backup');
-    if(!res.ok) throw new Error('Server returned ' + res.status);
-    const backup = await res.json();
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const stamp = new Date().toISOString().slice(0,10);
-    a.href = url;
-    a.download = `weekly-schedule-backup-${stamp}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    localBackupStatus = `Downloaded backup covering ${Object.keys(backup.weeks||{}).length} week(s) at ${new Date().toLocaleTimeString()}.`;
-    render();
-  }catch(err){
-    console.error(err);
-    alert('Could not download backup: ' + (err.message || err));
-  }
-}
-
-function restoreFromBackupFile(file){
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try{
-      const backup = JSON.parse(String(e.target.result));
-      if(!backup.global || !backup.weeks){
-        alert('That file doesn\'t look like a Weekly Schedule backup (missing global/weeks data).');
-        return;
-      }
-      const weekCount = Object.keys(backup.weeks).length;
-      if(!confirm(`This will overwrite the current crew rosters, job list, and ${weekCount} saved week(s) with the contents of this backup file. Continue?`)){
-        return;
-      }
-      const res = await fetch('/api/restore', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(backup)
-      });
-      const result = await res.json();
-      if(!res.ok || !result.ok){
-        throw new Error(result.error || ('Server returned ' + res.status));
-      }
-      localBackupStatus = `Restored ${result.restoredWeeks} week(s) from backup at ${new Date().toLocaleTimeString()}.`;
-      await loadGlobal();
-      await loadWeek(currentWeekKey);
-    }catch(err){
-      console.error(err);
-      alert('Restore failed: ' + (err.message || err));
-    }
-  };
-  reader.readAsText(file);
 }
 
 async function init(){
