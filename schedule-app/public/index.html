@@ -361,10 +361,11 @@ function crewsTabHtml(){
   return `<div class="board-row">
     ${Object.keys(globalData.crews).map(crewName=>{
       const members = globalData.crews[crewName];
+      const sortedMembers = members.map((m,i)=>({m,i})).sort((a,b)=>a.m.localeCompare(b.m));
       return `<div class="card">
         <div class="card-head" style="background:${BOARD_COLOR[crewName]}">${ICON[crewName]||''} ${esc(crewName)}</div>
         <div class="card-body">
-          ${members.length ? members.map((m,i)=>`
+          ${sortedMembers.length ? sortedMembers.map(({m,i})=>`
             <div class="roster-item">
               <span>${esc(m)}</span>
               ${isManager?`<button class="rm-btn" data-action="rmCrewMember" data-crew="${esc(crewName)}" data-idx="${i}">✕</button>`:''}
@@ -402,11 +403,14 @@ function boardsTabHtml(){
             const anyCrew = job.crew.some(c=>c && c.trim().length);
             if(!isManager && !hasJob && !anyCrew) return '';
             return `<div class="job-slot">
-              <div class="job-slot-head">
+              <div class="job-slot-head" style="display:flex;align-items:center;gap:6px;">
+                <div style="flex:1;min-width:0;">
                 ${isManager
                   ? `<input type="text" list="jobNames" placeholder="Job name…" value="${esc(job.jobName)}" data-action="jobName" data-board="${esc(boardName)}" data-idx="${ji}">`
                   : (hasJob ? esc(job.jobName) : `<span class="placeholder">No job assigned</span>`)
                 }
+                </div>
+                ${isManager?`<button class="rm-btn" data-action="rmJobSlot" data-board="${esc(boardName)}" data-idx="${ji}" title="Remove this job slot">✕</button>`:''}
               </div>
               <div class="job-slot-body">
                 <div class="job-days">
@@ -435,6 +439,7 @@ function boardsTabHtml(){
               </div>
             </div>`;
           }).join('') || '<div class="empty-hint">No jobs posted this week</div>'}
+          ${isManager?`<div class="top-add" style="justify-content:flex-start;margin-top:4px;margin-bottom:0;"><button data-action="addJobSlot" data-board="${esc(boardName)}">+ Add job</button></div>`:''}
         </div>
       </div>`;
     }).join('')}
@@ -632,6 +637,22 @@ function attachEvents(){
     sel.onchange = ()=>{
       weekData.jobBoards[sel.dataset.board][+sel.dataset.idx].days = sel.value.split(',');
       scheduleSaveWeek();
+    };
+  });
+  document.querySelectorAll('[data-action="addJobSlot"]').forEach(btn=>{
+    btn.onclick = ()=>{
+      weekData.jobBoards[btn.dataset.board].push({ jobName:'', crew:['','','','',''], notes:'', days:['MON','TUES','WED','THUR'] });
+      scheduleSaveWeek(); render();
+    };
+  });
+  document.querySelectorAll('[data-action="rmJobSlot"]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const board = btn.dataset.board, idx = +btn.dataset.idx;
+      const job = weekData.jobBoards[board][idx];
+      const hasContent = (job.jobName && job.jobName.trim()) || job.crew.some(c=>c && c.trim()) || (job.notes && job.notes.trim());
+      if(hasContent && !confirm('Remove this job slot and everything in it?')) return;
+      weekData.jobBoards[board].splice(idx,1);
+      scheduleSaveWeek(); render();
     };
   });
 
