@@ -213,14 +213,21 @@ async function loadGlobal(){
   }
 }
 
+async function doSaveGlobal(){
+  try{
+    await fetch('/api/global', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(globalData) });
+    flashSaved();
+  }catch(e){ console.error('global save failed', e); throw e; }
+}
+
 function scheduleSaveGlobal(){
   clearTimeout(saveGlobalTimer);
-  saveGlobalTimer = setTimeout(async ()=>{
-    try{
-      await fetch('/api/global', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(globalData) });
-      flashSaved();
-    }catch(e){ console.error('global save failed', e); }
-  }, 400);
+  saveGlobalTimer = setTimeout(doSaveGlobal, 400);
+}
+
+function flushSaveGlobal(){
+  clearTimeout(saveGlobalTimer);
+  return doSaveGlobal();
 }
 
 async function loadWeek(weekKeyInput){
@@ -235,14 +242,25 @@ async function loadWeek(weekKeyInput){
   render();
 }
 
+async function doSaveWeek(){
+  try{
+    await fetch('/api/week/' + currentWeekKey, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(weekData) });
+    flashSaved();
+  }catch(e){ console.error('week save failed', e); throw e; }
+}
+
 function scheduleSaveWeek(){
   clearTimeout(saveWeekTimer);
-  saveWeekTimer = setTimeout(async ()=>{
-    try{
-      await fetch('/api/week/' + currentWeekKey, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(weekData) });
-      flashSaved();
-    }catch(e){ console.error('week save failed', e); }
-  }, 400);
+  saveWeekTimer = setTimeout(doSaveWeek, 400);
+}
+
+function flushSaveWeek(){
+  clearTimeout(saveWeekTimer);
+  return doSaveWeek();
+}
+
+async function flushAllSaves(){
+  await Promise.all([flushSaveGlobal(), flushSaveWeek()]);
 }
 
 async function refreshKnownWeeks(){
@@ -596,7 +614,18 @@ function attachEvents(){
   if(unlockBtn) unlockBtn.onclick = ()=>{ showPinModal = true; pinError=''; render(); setTimeout(()=>document.getElementById('pinInput')?.focus(),50); };
 
   const lockBtn = document.getElementById('lockBtn');
-  if(lockBtn) lockBtn.onclick = ()=>{ isManager = false; showWeekPicker = false; render(); };
+  if(lockBtn) lockBtn.onclick = async ()=>{
+    lockBtn.disabled = true;
+    lockBtn.textContent = '💾 Saving…';
+    try{
+      await flushAllSaves();
+    }catch(e){
+      alert('Some changes may not have saved — check your connection and try locking again before you leave this page.');
+    }
+    isManager = false;
+    showWeekPicker = false;
+    render();
+  };
 
   const modalBg = document.getElementById('modalBg');
   if(modalBg){
@@ -1040,6 +1069,20 @@ async function init(){
 }
 init();
 pollTimer = setInterval(pollRefresh, 6000);
+
+// Best-effort: if the tab is closed/refreshed with unsaved changes still pending
+// (debounce hasn't fired yet), try to get them to the server via sendBeacon.
+window.addEventListener('beforeunload', () => {
+  if(saveGlobalTimer && globalData){
+    clearTimeout(saveGlobalTimer);
+    navigator.sendBeacon('/api/global', new Blob([JSON.stringify(globalData)], {type:'application/json'}));
+  }
+  if(saveWeekTimer && weekData){
+    clearTimeout(saveWeekTimer);
+    navigator.sendBeacon('/api/week/' + currentWeekKey, new Blob([JSON.stringify(weekData)], {type:'application/json'}));
+  }
+});
+
 </script>
 </body>
 </html>
