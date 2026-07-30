@@ -139,16 +139,28 @@ const BOARD_COLOR = {
 const ICON = {"Tower":"🗼","Electricians":"⚡","Civil":"⛑️"};
 
 const JOB_DAY_OPTIONS = [
+  { label: 'Mon – Sun (Full Week)', days: ['MON','TUES','WED','THUR','FRI','SAT','SUN'] },
+  { label: 'Mon – Sat',   days: ['MON','TUES','WED','THUR','FRI','SAT'] },
+  { label: 'Mon – Fri',   days: ['MON','TUES','WED','THUR','FRI'] },
   { label: 'Mon – Thurs', days: ['MON','TUES','WED','THUR'] },
   { label: 'Mon – Wed',   days: ['MON','TUES','WED'] },
   { label: 'Mon – Tues',  days: ['MON','TUES'] },
   { label: 'Mon only',    days: ['MON'] },
+  { label: 'Tues – Fri',  days: ['TUES','WED','THUR','FRI'] },
   { label: 'Tues – Thurs',days: ['TUES','WED','THUR'] },
   { label: 'Tues – Wed',  days: ['TUES','WED'] },
   { label: 'Tues only',   days: ['TUES'] },
+  { label: 'Wed – Fri',   days: ['WED','THUR','FRI'] },
   { label: 'Wed – Thurs', days: ['WED','THUR'] },
   { label: 'Wed only',    days: ['WED'] },
-  { label: 'Thurs only',  days: ['THUR'] }
+  { label: 'Thurs – Fri', days: ['THUR','FRI'] },
+  { label: 'Thurs only',  days: ['THUR'] },
+  { label: 'Fri only',    days: ['FRI'] },
+  { label: 'Fri – Sat',   days: ['FRI','SAT'] },
+  { label: 'Fri – Sun',   days: ['FRI','SAT','SUN'] },
+  { label: 'Sat – Sun',   days: ['SAT','SUN'] },
+  { label: 'Sat only',    days: ['SAT'] },
+  { label: 'Sun only',    days: ['SUN'] }
 ];
 
 function daysLabel(days){
@@ -432,8 +444,10 @@ function boardsTabHtml(){
                   if(!isManager && !(c && c.trim().length)) return '';
                   return `<div class="crew-line">
                     <input list="crewNames" ${isManager?'':'disabled'} placeholder="Crew member ${ci+1}" value="${esc(c)}" data-action="jobCrew" data-board="${esc(boardName)}" data-idx="${ji}" data-ci="${ci}">
+                    ${(isManager && job.crew.length > 5) ? `<button class="rm-btn" data-action="rmCrewSlot" data-board="${esc(boardName)}" data-idx="${ji}" data-ci="${ci}" title="Remove this crew slot">✕</button>` : ''}
                   </div>`;
                 }).join('')}
+                ${isManager?`<div class="top-add" style="justify-content:flex-start;margin:2px 0 0;"><button data-action="addCrewSlot" data-board="${esc(boardName)}" data-idx="${ji}">+ Add crew member</button></div>`:''}
                 ${(hasJob && globalData.jobAddresses[job.jobName]) ? `<div class="job-address"><span class="pin">📍</span><span>${esc(globalData.jobAddresses[job.jobName])}</span></div>` : ''}
                 ${isManager
                   ? `<textarea class="job-notes-input" placeholder="Notes…" data-action="jobNotes" data-board="${esc(boardName)}" data-idx="${ji}">${esc(job.notes||'')}</textarea>`
@@ -646,6 +660,19 @@ function attachEvents(){
   document.querySelectorAll('[data-action="addJobSlot"]').forEach(btn=>{
     btn.onclick = ()=>{
       weekData.jobBoards[btn.dataset.board].push({ jobName:'', crew:['','','','',''], notes:'', days:['MON','TUES','WED','THUR'] });
+      scheduleSaveWeek(); render();
+    };
+  });
+  document.querySelectorAll('[data-action="addCrewSlot"]').forEach(btn=>{
+    btn.onclick = ()=>{
+      weekData.jobBoards[btn.dataset.board][+btn.dataset.idx].crew.push('');
+      scheduleSaveWeek(); render();
+    };
+  });
+  document.querySelectorAll('[data-action="rmCrewSlot"]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const board = btn.dataset.board, idx = +btn.dataset.idx, ci = +btn.dataset.ci;
+      weekData.jobBoards[board][idx].crew.splice(ci,1);
       scheduleSaveWeek(); render();
     };
   });
