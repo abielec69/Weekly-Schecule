@@ -48,6 +48,9 @@ function ensureAllBoardsPresent(week) {
       week.jobBoards[n] = Array.from({ length: 6 }, () => ({ jobName: '', crew: ['', '', '', '', ''], notes: '', days: ['MON','TUES','WED','THUR'] }));
     }
   });
+  if (!Array.isArray(week.furloughed)) {
+    week.furloughed = Array.from({ length: 6 }, () => '');
+  }
   return week;
 }
 
@@ -128,6 +131,7 @@ function readWeek(weekKey) {
     weekOf: weekKey,
     jobBoards: defaultWeekJobBoards(),
     foremen,
+    furloughed: Array.from({ length: 6 }, () => ''),
     pto: [],
     notes: ''
   };
