@@ -236,7 +236,7 @@ async function loadWeek(weekKeyInput){
     const res = await fetch('/api/week/' + currentWeekKey);
     weekData = await res.json();
   }catch(e){
-    weekData = { weekOf: currentWeekKey, jobBoards:{}, foremen:[], pto:[], notes:'' };
+    weekData = { weekOf: currentWeekKey, jobBoards:{}, foremen:[], furloughed: [], pto:[], notes:'' };
   }
   refreshKnownWeeks();
   render();
@@ -375,7 +375,7 @@ function formatWeekRange(iso){
 }
 
 function tabsHtml(){
-  const tabs = [['boards','Job Boards'],['foremen','Daily Action'],['pto','PTO & Notes'],['crews','Crews'],['backup','Backup']];
+  const tabs = [['boards','Job Boards'],['furloughed','Furloughed'],['foremen','Daily Action'],['pto','PTO & Notes'],['crews','Crews'],['backup','Backup']];
   return `<div class="tabs">${tabs.map(([id,label])=>
     `<div class="tab ${activeTab===id?'active':''}" data-tab="${id}">${label}</div>`
   ).join('')}</div>`;
@@ -384,6 +384,7 @@ function tabsHtml(){
 function tabContentHtml(){
   if(activeTab === 'crews') return crewsTabHtml();
   if(activeTab === 'boards') return boardsTabHtml();
+  if(activeTab === 'furloughed') return furloughedTabHtml();
   if(activeTab === 'foremen') return foremenTabHtml();
   if(activeTab === 'pto') return ptoTabHtml();
   if(activeTab === 'backup') return backupTabHtml();
@@ -480,6 +481,39 @@ function boardsTabHtml(){
       </div>`;
     }).join('')}
   </div>`;
+}
+
+function furloughedTabHtml(){
+  const list = weekData.furloughed || [];
+  const optgroups = Object.keys(globalData.crews).map(crewName=>{
+    const members = globalData.crews[crewName].slice().sort((a,b)=>a.localeCompare(b));
+    return `<optgroup label="${esc(crewName)}">${members.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</optgroup>`;
+  }).join('');
+
+  return `
+    ${isManager?`<div class="top-add"><button data-action="addFurloughSlot">+ Add furloughed spot</button></div>`:''}
+    <div class="board-row">
+      <div class="card">
+        <div class="card-head" style="background:var(--red)">Furloughed This Week</div>
+        <div class="card-body">
+          ${isManager ? `
+            ${list.map((name,i)=>`
+              <div class="roster-item" style="gap:6px;">
+                <select style="flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:'Inter';" data-action="furloughSelect" data-idx="${i}">
+                  <option value="">— Select crew member —</option>
+                  ${optgroups}
+                </select>
+                ${list.length > 6 ? `<button class="rm-btn" data-action="rmFurloughSlot" data-idx="${i}" title="Remove this spot">✕</button>` : ''}
+              </div>`).join('')}
+          ` : `
+            ${list.filter(n=>n && n.trim().length).length
+              ? list.filter(n=>n && n.trim().length).sort((a,b)=>a.localeCompare(b)).map(n=>`<div class="roster-item"><span>${esc(n)}</span></div>`).join('')
+              : '<div class="empty-hint">No one furloughed this week</div>'
+            }
+          `}
+        </div>
+      </div>
+    </div>`;
 }
 
 function foremenTabHtml(){
@@ -702,6 +736,26 @@ function attachEvents(){
     btn.onclick = ()=>{
       const board = btn.dataset.board, idx = +btn.dataset.idx, ci = +btn.dataset.ci;
       weekData.jobBoards[board][idx].crew.splice(ci,1);
+      scheduleSaveWeek(); render();
+    };
+  });
+
+  document.querySelectorAll('[data-action="furloughSelect"]').forEach(sel=>{
+    const idx = +sel.dataset.idx;
+    sel.value = (weekData.furloughed && weekData.furloughed[idx]) || '';
+    sel.onchange = ()=>{
+      weekData.furloughed[idx] = sel.value;
+      scheduleSaveWeek();
+    };
+  });
+  const addFurloughBtn = document.querySelector('[data-action="addFurloughSlot"]');
+  if(addFurloughBtn) addFurloughBtn.onclick = ()=>{
+    weekData.furloughed.push('');
+    scheduleSaveWeek(); render();
+  };
+  document.querySelectorAll('[data-action="rmFurloughSlot"]').forEach(btn=>{
+    btn.onclick = ()=>{
+      weekData.furloughed.splice(+btn.dataset.idx,1);
       scheduleSaveWeek(); render();
     };
   });
