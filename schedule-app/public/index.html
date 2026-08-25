@@ -488,6 +488,9 @@ function boardsTabHtml(){
 }
 
 function furloughedTabHtml(){
+  if(!isManager){
+    return `<div class="card"><div class="card-body"><div class="empty-hint">This list is only visible in Manager Mode.</div></div></div>`;
+  }
   const list = weekData.furloughed || [];
   const optgroups = Object.keys(globalData.crews).map(crewName=>{
     const members = globalData.crews[crewName].slice().sort((a,b)=>a.localeCompare(b));
@@ -495,26 +498,19 @@ function furloughedTabHtml(){
   }).join('');
 
   return `
-    ${isManager?`<div class="top-add"><button data-action="addFurloughSlot">+ Add furloughed spot</button></div>`:''}
+    <div class="top-add"><button data-action="addFurloughSlot">+ Add furloughed spot</button></div>
     <div class="board-row">
       <div class="card">
         <div class="card-head" style="background:var(--red)">Furloughed This Week</div>
         <div class="card-body">
-          ${isManager ? `
-            ${list.map((name,i)=>`
-              <div class="roster-item" style="gap:6px;">
-                <select style="flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:'Inter';" data-action="furloughSelect" data-idx="${i}">
-                  <option value="">— Select crew member —</option>
-                  ${optgroups}
-                </select>
-                ${list.length > 6 ? `<button class="rm-btn" data-action="rmFurloughSlot" data-idx="${i}" title="Remove this spot">✕</button>` : ''}
-              </div>`).join('')}
-          ` : `
-            ${list.filter(n=>n && n.trim().length).length
-              ? list.filter(n=>n && n.trim().length).sort((a,b)=>a.localeCompare(b)).map(n=>`<div class="roster-item"><span>${esc(n)}</span></div>`).join('')
-              : '<div class="empty-hint">No one furloughed this week</div>'
-            }
-          `}
+          ${list.map((name,i)=>`
+            <div class="roster-item" style="gap:6px;">
+              <select style="flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:'Inter';" data-action="furloughSelect" data-idx="${i}">
+                <option value="">— Select crew member —</option>
+                ${optgroups}
+              </select>
+              ${list.length > 6 ? `<button class="rm-btn" data-action="rmFurloughSlot" data-idx="${i}" title="Remove this spot">✕</button>` : ''}
+            </div>`).join('')}
         </div>
       </div>
     </div>`;
