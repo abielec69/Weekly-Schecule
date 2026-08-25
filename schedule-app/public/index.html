@@ -41,6 +41,7 @@
   button.pill:hover{background:#333F4E;}
   button.pill.active{background:var(--orange);border-color:var(--orange);color:#fff;}
   button.pill.small{padding:6px 10px;font-size:14px;}
+  button.pill:disabled{opacity:.6;cursor:default;}
 
   /* tabs */
   .tabs{display:flex;gap:4px;padding:16px 22px 0;flex-wrap:wrap;}
@@ -134,7 +135,8 @@ const SAFETY_OBSERVATION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSey9X_Y
 const BOARD_COLOR = {
   "Tower":"var(--blue)", "Electricians":"var(--blue)", "Civil":"var(--blue)",
   "TMO/Betacom":"var(--blue)", "Mod Project":"var(--blue)", "New Builds":"var(--blue)", "NEW BUILD AUDIT":"var(--blue)",
-  "Power Towers":"var(--blue)", "Gary":"var(--blue)", "Nando":"var(--blue)", "Small Cell":"var(--blue)", "SITE WALKS":"var(--blue)"
+  "Power Towers":"var(--blue)", "Gary":"var(--blue)", "Nando":"var(--blue)", "Small Cell":"var(--blue)", "SITE WALKS":"var(--blue)",
+  "Vendor Direct TS":"var(--blue)", "Mod TS":"var(--blue)", "Crown Maintenance":"var(--blue)"
 };
 const ICON = {"Tower":"🗼","Electricians":"⚡","Civil":"⛑️"};
 
@@ -170,7 +172,7 @@ function daysLabel(days){
 }
 
 let globalData = null;   // crews, master lists, MS Graph settings — shared across all weeks
-let weekData = null;     // jobBoards, foremen, pto, notes — specific to the selected week
+let weekData = null;     // jobBoards, foremen, furloughed, pto, notes — specific to the selected week
 let currentWeekKey = mondayKey(new Date().toISOString().slice(0,10));
 let knownWeeks = [];
 
@@ -739,6 +741,16 @@ function attachEvents(){
       scheduleSaveWeek(); render();
     };
   });
+  document.querySelectorAll('[data-action="rmJobSlot"]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const board = btn.dataset.board, idx = +btn.dataset.idx;
+      const job = weekData.jobBoards[board][idx];
+      const hasContent = (job.jobName && job.jobName.trim()) || job.crew.some(c=>c && c.trim()) || (job.notes && job.notes.trim());
+      if(hasContent && !confirm('Remove this job slot and everything in it?')) return;
+      weekData.jobBoards[board].splice(idx,1);
+      scheduleSaveWeek(); render();
+    };
+  });
 
   document.querySelectorAll('[data-action="furloughSelect"]').forEach(sel=>{
     const idx = +sel.dataset.idx;
@@ -756,16 +768,6 @@ function attachEvents(){
   document.querySelectorAll('[data-action="rmFurloughSlot"]').forEach(btn=>{
     btn.onclick = ()=>{
       weekData.furloughed.splice(+btn.dataset.idx,1);
-      scheduleSaveWeek(); render();
-    };
-  });
-  document.querySelectorAll('[data-action="rmJobSlot"]').forEach(btn=>{
-    btn.onclick = ()=>{
-      const board = btn.dataset.board, idx = +btn.dataset.idx;
-      const job = weekData.jobBoards[board][idx];
-      const hasContent = (job.jobName && job.jobName.trim()) || job.crew.some(c=>c && c.trim()) || (job.notes && job.notes.trim());
-      if(hasContent && !confirm('Remove this job slot and everything in it?')) return;
-      weekData.jobBoards[board].splice(idx,1);
       scheduleSaveWeek(); render();
     };
   });
@@ -1136,7 +1138,6 @@ window.addEventListener('beforeunload', () => {
     navigator.sendBeacon('/api/week/' + currentWeekKey, new Blob([JSON.stringify(weekData)], {type:'application/json'}));
   }
 });
-
 </script>
 </body>
 </html>
