@@ -14,7 +14,7 @@ if (!fs.existsSync(WEEKS_DIR)) fs.mkdirSync(WEEKS_DIR, { recursive: true });
 
 const DEFAULT_MASTER = ["Aaran Tripp","Adam B","Adam K","Aiden H","Andy C","Bill S","Billy B","Colin K","Craig D","Danny D","Derek C","Douglas","Ed","Ed S","Gary M","Groundhog","Isaac","Jack J","Jeff Sayer","Jeff Shriver","Jim D","Joel","Jordan R","Kev Dog","Kookie","Kukets","Luke","Mac N Cheese","Matt H","Mike B","Mike P","Monte M","Nate S","Nick G","Nugget","Paul D","Paul K","Philbert","Ricky K","Riley S","Ronalt","Scotty V","Thone S","Will M"];
 
-const JOB_BOARD_NAMES = ["TMO/Betacom", "Mod Project", "New Builds", "NEW BUILD AUDIT", "Power Towers", "Gary", "Nando", "Small Cell", "SITE WALKS"];
+const JOB_BOARD_NAMES = ["TMO/Betacom", "Mod Project", "New Builds", "NEW BUILD AUDIT", "Power Towers", "Gary", "Nando", "Small Cell", "SITE WALKS", "Vendor Direct TS", "Mod TS", "Crown Maintenance"];
 
 function defaultGlobal() {
   return {
@@ -104,7 +104,7 @@ function readWeek(weekKey) {
     try {
       const week = JSON.parse(fs.readFileSync(fp, 'utf8'));
       const patched = ensureAllBoardsPresent(week);
-      writeWeek(weekKey, patched); // persist any newly-added boards
+      writeWeek(weekKey, patched); // persist any newly-added boards/fields
       return patched;
     } catch (e) {
       // fall through to create a fresh one
@@ -164,6 +164,7 @@ function migrateOldDataIfNeeded() {
       weekOf: weekKey,
       jobBoards: old.jobBoards || defaultWeekJobBoards(),
       foremen: old.foremen || [],
+      furloughed: old.furloughed || Array.from({ length: 6 }, () => ''),
       pto: old.pto || [],
       notes: old.notes || ''
     };
